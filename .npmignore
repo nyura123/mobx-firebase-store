@@ -1,0 +1,8 @@
+.idea/
+node_modules/
+src/
+test/
+examples/
+examples2/
+.babelrc
+npm-debug.log
