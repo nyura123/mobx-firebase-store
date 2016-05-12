@@ -159,8 +159,9 @@ class MobxFirebaseStore {
     subscribeToFirebaseEvents(cb) {
         const subId = this.nextEventSubscriberId++;
         this.eventSubscribers[subId] = cb;
+        const self = this;
         return function unsubscribe() {
-            delete eventSubscribers[subId];
+            delete self.eventSubscribers[subId];
         }
     }
     publishFirebaseEvent(what) {
