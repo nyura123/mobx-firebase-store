@@ -28,7 +28,7 @@
     "tape": "^4.5.1",
     "webpack": "^1.13.0"
   },
-  "dependencies": {
+  "peerDependencies": {
     "firebase-nest": "^0.0.29",
     "mobx": "^2.1.5"
   }
