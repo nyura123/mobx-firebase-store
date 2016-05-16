@@ -8,14 +8,14 @@ import createNestedFirebaseSubscriber, {
 
 import {map, transaction} from 'mobx';
 
-function setData(fbStore, sub, val) {
+function setData(fbStore, sub, key, val) {
     transaction(() => {
         if (!fbStore.get(sub.subKey)) {
             fbStore.set(sub.subKey, map({}));
         }
         fbStore.get(sub.subKey).clear();
         fbStore.get(sub.subKey).merge(val || {});
-    })
+    });
 }
 
 function setChild(fbStore, sub, key, val) {
@@ -26,16 +26,16 @@ function setChild(fbStore, sub, key, val) {
             console.error('Can\'t find record for ' + sub.subKey);
             return;
         }
-        if (val !== null && val !== undefined)
+        if (val !== null && val !== undefined) {
             record.set(key, val);
-        else {
+        } else {
             record.delete(key);
         }
-    })
+    });
 }
 
 function createFirebaseSubscriber(store, fb) {
-    const {subscribeSubs, subscribedRegistry} = createNestedFirebaseSubscriber({
+    const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
             //console.log('got value ' + type + ' subKey=' + sub.subKey + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
 
@@ -44,11 +44,11 @@ function createFirebaseSubscriber(store, fb) {
             store.fetchStatus.isFetching.delete(sub.subKey);
 
             if (sub.asValue) {
-                setData(fbStore, sub, snapshot.val());
+                setData(fbStore, sub, snapshot.key(), snapshot.val());
             } else if (sub.asList) {
                 switch (type) {
                     case FB_INIT_VAL:
-                        setData(fbStore, sub, snapshot.val());
+                        setData(fbStore, sub, snapshot.key(), snapshot.val());
                         break;
                     case FB_CHILD_ADDED:
                     case FB_CHILD_CHANGED:
@@ -104,6 +104,8 @@ function createFirebaseSubscriber(store, fb) {
         },
 
         resolveFirebaseQuery: function (sub) {
+            //TODO assert sub.path exists
+
             if (store.resolveFirebaseQuery) {
                 return store.resolveFirebaseQuery(sub);
             }
@@ -111,7 +113,7 @@ function createFirebaseSubscriber(store, fb) {
         }
     });
 
-    return {subscribeSubs, subscribedRegistry};
+    return {subscribeSubs, subscribedRegistry, unsubscribeAll};
 }
 
 class MobxFirebaseStore {
@@ -127,26 +129,14 @@ class MobxFirebaseStore {
         };
 
         this.fb = fb; //a Firebase instance pointing to root URL for the app
-        const {subscribeSubs, subscribedRegistry} = createFirebaseSubscriber(this, this.fb);
+        const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createFirebaseSubscriber(this, this.fb);
         this.subscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
+        this.unsubscribeAll = unsubscribeAll;
 
         //Publish stream of firebase events to interested parties
         this.nextEventSubscriberId = 1;
         this.eventSubscribers = {};
-    }
-
-    reset() {
-        //TODO check if anyone's still subscribed...
-        //this.fbStore.keys().forEach(subKey => {
-        //    //clear data that no one is subscribed to...
-        //    if (!this.subscribedRegistry[subKey]) {
-        //        this.fbStore.get(subKey).clear();
-        //    }
-        //}
-        this.fbStore.clear();
-        this.fetchStatus.isFetching.clear();
-        this.fetchStatus.fetchError.clear();
     }
 
     isFetching(subKey) {
