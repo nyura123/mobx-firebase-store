@@ -1,3 +1,10 @@
 # mobx-firebase-store
 readme TODO
-# mobx-firebase-store
+# example:
+
+cd examples/listAndDetail
+npm install
+webpack
+open index.html
+
+

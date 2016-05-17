@@ -8,12 +8,20 @@ import createNestedFirebaseSubscriber, {
 
 import {map, transaction} from 'mobx';
 
+export const primitiveKey = '_primitive';
+
 function setData(fbStore, sub, key, val) {
     transaction(() => {
         if (!fbStore.get(sub.subKey)) {
             fbStore.set(sub.subKey, map({}));
         }
         fbStore.get(sub.subKey).clear();
+
+        //Support primitive values by wrapping them in an object
+        if (val && typeof val !== 'object') {
+            val = {[primitiveKey]: val};
+        }
+
         fbStore.get(sub.subKey).merge(val || {});
     });
 }
