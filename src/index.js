@@ -18,7 +18,7 @@ function setData(fbStore, sub, key, val) {
         fbStore.get(sub.subKey).clear();
 
         //Support primitive values by wrapping them in an object
-        if (val && typeof val !== 'object') {
+        if (val !== null && typeof val !== 'object') {
             val = {[primitiveKey]: val};
         }
 
