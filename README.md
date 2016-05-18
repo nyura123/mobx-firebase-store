@@ -2,9 +2,9 @@
 readme TODO
 # example:
 
-cd examples/listAndDetail
-npm install
-webpack
-open index.html
+1. cd examples/listAndDetail
+2. npm install
+3. webpack
+4. open index.html
 
 
