@@ -29,7 +29,7 @@
     "webpack": "^1.13.0"
   },
   "peerDependencies": {
-    "firebase-nest": "^0.0.29",
+    "firebase-nest": "^0.0.31",
     "mobx": "^2.1.5"
   }
 }
