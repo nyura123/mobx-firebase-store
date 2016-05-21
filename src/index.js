@@ -42,77 +42,113 @@ function setChild(fbStore, sub, key, val) {
     });
 }
 
+class CallQueue {
+    constructor() {
+        this.queue = [];
+        this.timeout = null;
+        this.maxQueueSize = 100;
+        this.queueingTimeMs = 20;
+    }
+    add(call) {
+        if (this.queue.length > this.maxQueueSize ) {
+            this.drain();
+        }
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
+        this.queue.push(call);
+        this.timeout = setTimeout(() => {
+            this.drain();
+        }, this.queueingTimeMs);
+    }
+    drain() {
+        const queue = this.queue.slice(0);
+        this.queue = [];
+        transaction(() => {
+            (queue || []).forEach(call => call());
+        });
+    }
+}
+
 function createFirebaseSubscriber(store, fb) {
+    const queue = new CallQueue();
+
     const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
-            //console.log('got value ' + type + ' subKey=' + sub.subKey + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
 
-            const fbStore = store.fbStore;
+            function call() {
+                //console.log('got value ' + type + ' subKey=' + sub.subKey + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
+                const fbStore = store.fbStore;
 
-            store.fetchStatus.isFetching.delete(sub.subKey);
-
-            if (sub.asValue) {
-                setData(fbStore, sub, snapshot.key(), snapshot.val());
-            } else if (sub.asList) {
-                switch (type) {
-                    case FB_INIT_VAL:
-                        setData(fbStore, sub, snapshot.key(), snapshot.val());
-                        break;
-                    case FB_CHILD_ADDED:
-                    case FB_CHILD_CHANGED:
-                        setChild(fbStore, sub, snapshot.key(), snapshot.val());
-                        break;
-                    case FB_CHILD_REMOVED:
-                        setChild(fbStore, sub, snapshot.key(), null);
-                        break;
+                if (sub.asValue) {
+                    setData(fbStore, sub, snapshot.key(), snapshot.val());
+                } else if (sub.asList) {
+                    switch (type) {
+                        case FB_INIT_VAL:
+                            setData(fbStore, sub, snapshot.key(), snapshot.val());
+                            break;
+                        case FB_CHILD_ADDED:
+                        case FB_CHILD_CHANGED:
+                            setChild(fbStore, sub, snapshot.key(), snapshot.val());
+                            break;
+                        case FB_CHILD_REMOVED:
+                            setChild(fbStore, sub, snapshot.key(), null);
+                            break;
+                    }
+                } else {
+                    //TODO error
+                    console.error('sub.asValue or sub.asList must be true');
+                    console.error(sub);
                 }
-            } else {
-                //TODO error
-                console.error('sub.asValue or sub.asList must be true');
-                console.error(sub);
+
+                if (store.onData) {
+                    //Allow store to also react to data, for animations, snackbars, etc.
+                    store.onData(type, snapshot, sub);
+                }
             }
 
-            if (store.onData) {
-                //Allow store to also react to data, for animations, snackbars, etc.
-                store.onData(type, snapshot, sub);
-            }
+            queue.add(call);
         },
         onSubscribed: (sub)=> {
-            if (store.onSubscribed) {
-                store.onSubscribed(sub);
+            function call() {
+                if (store.onSubscribed) {
+                    store.onSubscribed(sub);
+                }
             }
+            queue.add(call);
         },
         onUnsubscribed: (subKey)=> {
-            if (store.onUnsubscribed) {
-                store.onUnsubscribed(subKey);
+            function call() {
+                if (store.onUnsubscribed) {
+                    store.onUnsubscribed(subKey);
+                }
             }
+            queue.add(call);
         },
         onWillSubscribe: function (sub) {
             //console.log('Subscribing ' + sub.subKey + ' path=' + sub.path);
-            if (!subscribedRegistry[sub.subKey]) {
-                store.fetchStatus.isFetching.set(sub.subKey, true);
+            function call() {
+                if (store.onWillSubscribe) {
+                    store.onWillSubscribe(sub);
+                }
             }
-
-            if (store.onWillSubscribe) {
-                store.onWillSubscribe(sub);
-            }
+            queue.add(call);
         },
 
-        /* Remove data that is about to be unsubscribed since no one needs it! */
         onWillUnsubscribe: function (subKey) {
             //console.log('Unsubscribing ' + subKey + ' ref#=' + subscribedRegistry[subKey].refCount);
-            if (subscribedRegistry[subKey].refCount <= 1) {
-                store.fbStore.delete(subKey);
-                store.fetchStatus.isFetching.delete(subKey);
+            function call() {
+                if (store.onWillUnsubscribe) {
+                    store.onWillUnsubscribe(subKey);
+                }
             }
-
-            if (store.onWillUnsubscribe) {
-                store.onWillUnsubscribe(subKey);
-            }
+            queue.add(call);
         },
 
         resolveFirebaseQuery: function (sub) {
-            //TODO assert sub.path exists
+            if (!sub.path) {
+                console.error("mobx-firebase-store expects each sub to have a path: "+sub.subKey);
+            }
 
             if (store.resolveFirebaseQuery) {
                 return store.resolveFirebaseQuery(sub);
@@ -131,11 +167,6 @@ class MobxFirebaseStore {
         //data that will be populated directly from firebase
         this.fbStore = map({});
 
-        this.fetchStatus = {
-            isFetching: map({}),
-            fetchError: map({})
-        };
-
         this.fb = fb; //a Firebase instance pointing to root URL for the app
         const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createFirebaseSubscriber(this, this.fb);
         this.subscribeSubs = subscribeSubs;
@@ -145,13 +176,6 @@ class MobxFirebaseStore {
         //Publish stream of firebase events to interested parties
         this.nextEventSubscriberId = 1;
         this.eventSubscribers = {};
-    }
-
-    isFetching(subKey) {
-        return (!subKey? this.fetchStatus.isFetching.size > 0 : !!this.fetchStatus.isFetching.get(subKey));
-    }
-    isFetchError() {
-        return this.fetchStatus.fetchError.size > 0;
     }
 
     subscribeToFirebaseEvents(cb) {

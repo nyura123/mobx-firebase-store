@@ -1,6 +1,6 @@
 {
   "name": "mobx-firebase-store",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "mobx store with dynamic firebase subscriptions and data",
   "keywords": [
     "firebase",
