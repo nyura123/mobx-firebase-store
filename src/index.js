@@ -110,39 +110,39 @@ function createFirebaseSubscriber(store, fb) {
             queue.add(call);
         },
         onSubscribed: (sub)=> {
-            function call() {
-                if (store.onSubscribed) {
+            if (store.onSubscribed) {
+                function call() {
                     store.onSubscribed(sub);
                 }
+                queue.add(call);
             }
-            queue.add(call);
         },
         onUnsubscribed: (subKey)=> {
-            function call() {
-                if (store.onUnsubscribed) {
+            if (store.onUnsubscribed) {
+                function call() {
                     store.onUnsubscribed(subKey);
                 }
+                queue.add(call);
             }
-            queue.add(call);
         },
         onWillSubscribe: function (sub) {
             //console.log('Subscribing ' + sub.subKey + ' path=' + sub.path);
-            function call() {
-                if (store.onWillSubscribe) {
+            if (store.onWillSubscribe) {
+                function call() {
                     store.onWillSubscribe(sub);
                 }
+                queue.add(call);
             }
-            queue.add(call);
         },
 
         onWillUnsubscribe: function (subKey) {
             //console.log('Unsubscribing ' + subKey + ' ref#=' + subscribedRegistry[subKey].refCount);
-            function call() {
-                if (store.onWillUnsubscribe) {
+            if (store.onWillUnsubscribe) {
+                function call() {
                     store.onWillUnsubscribe(subKey);
                 }
+                queue.add(call);
             }
-            queue.add(call);
         },
 
         resolveFirebaseQuery: function (sub) {
@@ -172,40 +172,6 @@ class MobxFirebaseStore {
         this.subscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
-
-        //Publish stream of firebase events to interested parties
-        this.nextEventSubscriberId = 1;
-        this.eventSubscribers = {};
-    }
-
-    subscribeToFirebaseEvents(cb) {
-        const subId = this.nextEventSubscriberId++;
-        this.eventSubscribers[subId] = cb;
-        const self = this;
-        return function unsubscribe() {
-            delete self.eventSubscribers[subId];
-        }
-    }
-    publishFirebaseEvent(what) {
-        Object.keys(this.eventSubscribers || {}).forEach(subId => {
-            const cb = this.eventSubscribers[subId];
-            cb(what);
-        });
-    }
-    onData(type, snapshot, sub) {
-        this.publishFirebaseEvent({type: 'onData', payload: {type, snapshot, sub}});
-    }
-    onWillSubscribe(sub) {
-        this.publishFirebaseEvent({type: 'onWillSubscribe', payload: {sub}});
-    }
-    onWillUnsubscribe(subKey) {
-        this.publishFirebaseEvent({type: 'onWillUnsubscribe', payload: {subKey}});
-    }
-    onSubscribed(sub) {
-        this.publishFirebaseEvent({type: 'onSubscribed', payload: {sub}});
-    }
-    onUnsubscribed(subKey) {
-        this.publishFirebaseEvent({type: 'onUnsubscribed', payload: {subKey}});
     }
 }
 

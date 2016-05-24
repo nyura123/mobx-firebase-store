@@ -2,7 +2,20 @@
 
 Documentation TODO
 
+#### Example of a React component that subscribes to Firebase and gets data from MobxFirebaseStore:
+
+https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDetail
+
+1. cd examples/listAndDetail
+2. npm install
+3. webpack
+4. open index.html
+
 #### Basic Examples Taken From Tests
+
+Subscribe to a Firebase path and specify how to subscribe to each child or field under that path (something like a data join). 
+Data flows into the store and gets stored under `subKey`'s specified in the subscriptions.
+
 
 ```
 const fb = new Firebase('https://your-firebase-instance');
@@ -99,13 +112,5 @@ it('allows to subscribe as list and subscribe to children', (done) => {
     
 ```
 
-#### example:
-
-https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDetail
-
-1. cd examples/listAndDetail
-2. npm install
-3. webpack
-4. open index.html
 
 

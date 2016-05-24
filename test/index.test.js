@@ -20,11 +20,11 @@ describe('MobxFirebaseStore', () => {
     });
 
     afterEach(function() {
+        fb.set(null);
         if (server) {
             server.close();
             server = null;
         }
-        fb.set(null);
         if (disposer) {
             disposer();
             disposer = null;
@@ -236,6 +236,117 @@ describe('MobxFirebaseStore', () => {
                 expect(orderItem1.entries()).toEqual([['productKey', 'product51'], ['userKey', 'user1']]);
                 expect(user1Data.entries()).toEqual([[primitiveKey, 'user1 Detail']]);
                 expect(product51Data.entries()).toEqual([['category', 'ufo'], ['name', 'product51']]);
+                unsub();
+                done();
+            }
+        });
+    });
+
+
+    it('allows to subscribe to children in another store', (done) => {
+
+        const userStore = new MobxFirebaseStore(fb);
+
+        const unsub = store.subscribeSubs([{
+            subKey: 'list',
+            asList: true,
+            forEachChild: {
+                subscribeSubs: userStore.subscribeSubs.bind(userStore),
+                childSubs: (childKey, arg1, arg2, childVal) => {
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+childKey,
+                        asValue:true,
+                        path: 'users/'+childKey
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that childVal is the last arg passed to childSubs
+            },
+            path: 'list'
+        }]);
+
+        const list = {
+            user1: 1,
+            user2: 1
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            },
+            user2: {
+                name: "name2"
+            }
+        };
+
+        fb.child('list').set(list);
+        fb.child('users').set(users);
+
+        disposer = autorun(() => {
+            const list = store.fbStore.get('list');
+
+            //Users got stored in the userStore
+            const user1 = userStore.fbStore.get('user_user1');
+            const user2 = userStore.fbStore.get('user_user2');
+
+            if (list && user1 && user2) {
+                expect(list.entries()).toEqual([['user1', 1], ['user2', 1]]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+                unsub();
+                done();
+            }
+        });
+    });
+
+
+    it('allows to subscribe to fields in another store', (done) => {
+        const userStore = new MobxFirebaseStore(fb);
+
+        const unsub = store.subscribeSubs([{
+            subKey: 'item',
+            asValue: true,
+            forFields: [{
+                subscribeSubs: userStore.subscribeSubs.bind(userStore),
+                fieldKey: 'userKey',
+                fieldSubs: (fieldVal, arg1, arg2) => {
+                    expect(fieldVal).toBe('user1');
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+fieldVal,
+                        asValue:true,
+                        path: 'users/'+fieldVal
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that childVal is the last arg passed to childSubs
+            }],
+            path: 'item'
+        }]);
+
+        const item = {
+            userKey: 'user1'
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            }
+        };
+
+        fb.child('item').set(item);
+        fb.child('users').set(users);
+
+        disposer = autorun(() => {
+            const list = store.fbStore.get('item');
+
+            //Users got stored in the userStore
+            const user1 = userStore.fbStore.get('user_user1');
+
+            if (list && user1) {
+                expect(list.entries()).toEqual([['userKey', 'user1']]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
                 unsub();
                 done();
             }
