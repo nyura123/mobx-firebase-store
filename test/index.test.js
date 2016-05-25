@@ -300,7 +300,6 @@ describe('MobxFirebaseStore', () => {
         });
     });
 
-
     it('allows to subscribe to fields in another store', (done) => {
         const userStore = new MobxFirebaseStore(fb);
 
@@ -320,7 +319,7 @@ describe('MobxFirebaseStore', () => {
                         path: 'users/'+fieldVal
                     }]
                 },
-                args: ['arg1', 'arg2'] //just to show that childVal is the last arg passed to childSubs
+                args: ['arg1', 'arg2'] //just to show that you can pass args to fieldSubs
             }],
             path: 'item'
         }]);
@@ -347,6 +346,153 @@ describe('MobxFirebaseStore', () => {
             if (list && user1) {
                 expect(list.entries()).toEqual([['userKey', 'user1']]);
                 expect(user1.entries()).toEqual([['name', 'name1']]);
+                unsub();
+                done();
+            }
+        });
+    });
+
+    it('updates children subscriptions when children change', (done) => {
+        const unsub = store.subscribeSubs([{
+            subKey: 'list',
+            asList: true,
+            forEachChild: {
+                childSubs: (childKey, arg1, arg2, childVal) => {
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+childVal.userKey,
+                        asValue:true,
+                        path: 'users/'+childVal.userKey
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that childVal is the last arg passed to childSubs
+            },
+            path: 'list'
+        }]);
+
+        const list = {
+            firstUser: {userKey: 'user1'},
+            secondUser: {userKey: 'user2'}
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            },
+            user2: {
+                name: "name2"
+            },
+            user3: {
+                name: "name3"
+            }
+        };
+
+        fb.child('list').set(list);
+        fb.child('users').set(users);
+
+        let updated = false;
+
+        disposer = autorun(() => {
+            const list = store.fbStore.get('list');
+
+            //Users got stored in the userStore
+            const user1 = store.fbStore.get('user_user1');
+            const user2 = store.fbStore.get('user_user2');
+            const user3 = store.fbStore.get('user_user3');
+
+            if (list && user1 && user2 && !updated) {
+                expect(user3).toBe(undefined);
+                expect(store.subscribedRegistry).toContainKeys(['list', 'user_user1', 'user_user2']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(3);
+                expect(list.entries()).toEqual([['firstUser', {userKey:'user1'}], ['secondUser', {userKey:'user2'}]]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+
+                updated = true;
+                //Update children data
+                fb.child('list').set({
+                    firstUser: {userKey: 'user2'},
+                    secondUser: {userKey: 'user3'}
+                });
+            }
+
+            if (list && user2 && user3) {
+                expect(store.subscribedRegistry).toContainKeys(['list', 'user_user2', 'user_user3']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(3);
+
+                expect(list.entries()).toEqual([['firstUser', {userKey:'user2'}], ['secondUser', {userKey:'user3'}]]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+                expect(user3.entries()).toEqual([['name', 'name3']]);
+
+                unsub();
+                done();
+            }
+        });
+    });
+
+    it('updates field subscriptions when field values change', (done) => {
+        const unsub = store.subscribeSubs([{
+            subKey: 'item',
+            asValue: true,
+            forFields: [{
+                fieldKey: 'userKey',
+                fieldSubs: (fieldVal, arg1, arg2) => {
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+fieldVal,
+                        asValue:true,
+                        path: 'users/'+fieldVal
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that you can pass args to fieldSubs
+            }],
+            path: 'item'
+        }]);
+
+        const item = {
+            userKey: 'user1'
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            },
+            user2: {
+                name: "name2"
+            }
+        };
+
+        fb.child('item').set(item);
+        fb.child('users').set(users);
+
+        let updated = false;
+
+        disposer = autorun(() => {
+            const list = store.fbStore.get('item');
+
+            //Users got stored in the userStore
+            const user1 = store.fbStore.get('user_user1');
+            const user2 = store.fbStore.get('user_user2');
+
+            if (list && user1 && !updated) {
+                expect(user2).toBe(undefined);
+                expect(store.subscribedRegistry).toContainKeys(['item', 'user_user1']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(2);
+                expect(list.entries()).toEqual([['userKey', 'user1']]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
+
+                //Update field data
+                updated = true;
+                fb.child('item').child('userKey').set('user2');
+            }
+
+            if (list && user2) {
+                expect(store.subscribedRegistry).toContainKeys(['item', 'user_user2']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(2);
+                expect(list.entries()).toEqual([['userKey', 'user2']]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
                 unsub();
                 done();
             }

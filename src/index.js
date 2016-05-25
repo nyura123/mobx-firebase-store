@@ -77,7 +77,7 @@ function createFirebaseSubscriber(store, fb) {
         onData: function (type, snapshot, sub) {
 
             function call() {
-                //console.log('got value ' + type + ' subKey=' + sub.subKey + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
+                //console.log('got value ' + type + ' subKey=' + sub.subKey + ' key=' + snapshot.key() + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
                 const fbStore = store.fbStore;
 
                 if (sub.asValue) {
