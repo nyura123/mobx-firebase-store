@@ -1,6 +1,86 @@
 #### mobx-firebase-store
 
-Documentation TODO
+`MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
+
+
+#### Install libs
+
+npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save
+
+#### Basic Example
+
+```
+import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
+import MobxFirebaseStore from 'mobx-firebase-store';
+import {observer} from 'mobx-react';
+import {autoSubscriber} from 'firebase-nest';
+import Firebase from 'firebase';
+
+const store = new MobxFirebaseStore(
+    new Firebase("https://docs-examples.firebaseio.com")
+)
+
+/*
+    Display messages and users for each message
+ */
+class MessageList extends Component {
+    //implement getSubs and subscribeSubs for autoSubscriber: subscribe to messages and user for each message
+    static getSubs(props, state) {
+        return [{
+            subKey: 'messages',
+            asList: true,
+            forEachChild: {
+                childSubs: (childKey, childVal) => {
+                    return [{
+                        subKey: "user_"+childVal.uid,
+                        asValue: true,
+
+                        path: "samplechat/users/"+childVal.uid
+                    }]
+                }
+
+            },
+
+            path: 'samplechat/messages'
+        }];
+    }
+    static subscribeSubs(subs, props, state) {
+        return props.store.subscribeSubs(subs);
+    }
+
+    renderMessage(messageKey, messageData) {
+        const user = this.props.store.fbStore.get('user_'+messageData.uid);
+        const userName = user ? user.get('name') : null;
+
+        return (
+          <div style={{border:'1px grey solid'}} key={messageKey}>
+              <div>{messageData.text}</div>
+              <div>Posted {new Date(messageData.timestamp).toString()}</div>
+              {userName && <div>By {userName.first || ''}{' '}{userName.last || ''}</div>}
+          </div>
+        );
+    }
+    render() {
+        const messages = this.props.store.fbStore.get('messages');
+        if (!messages) {
+            return <div>Loading messages...</div>
+        }
+        return (
+          <div>
+              Messages:
+              {messages.keys().map(messageKey => this.renderMessage(messageKey, messages.get(messageKey)))}
+          </div>
+        );
+    }
+}
+
+//Subscribe to and observe firebase data
+MessageList = autoSubscriber(observer(MessageList));
+
+
+ReactDOM.render(<MessageList store={store}/>, document.getElementById('app'));
+```
 
 #### Example of a React component that subscribes to Firebase and gets data from MobxFirebaseStore:
 
@@ -11,7 +91,7 @@ https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDeta
 3. webpack
 4. open index.html
 
-#### Basic Examples Taken From Tests
+#### More Examples Taken From Tests
 
 Subscribe to a Firebase path and specify how to subscribe to each child or field under that path (something like a data join). 
 Data flows into the store and gets stored under `subKey`'s specified in the subscriptions.
