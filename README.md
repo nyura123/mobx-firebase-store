@@ -3,9 +3,38 @@
 `MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
 
 
+#### Features
+
+1. Allows to differentiate between data not being subscribed or loaded (`store.getData(...) === undefined`) vs being empty.
+
+2. Writes to maps are done inside transactions for better performance.
+ 
+3. Throttles writes by default - this helps if we want to avoid re-rendering too frequently, such as during initial load of data.
+
+ To turn off: `const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle: false}})`.
+
+ Throttling params can also be tweaked.
+
+4. `firebase-nest` subscriptions support specifying how to subscribe to child data/fields.
+
+5. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
+
+ * `onData` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
+ * `resolveFirebaseQuery` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
+ * `onWillSubscribe`, `onWillUnsubscribe`
+
+6. Exposes `subscribedRegistry` which shows how many subscribers are currently listening to each piece of data.
+
+7. `store.reset()` can be used to unsubscribe from all data & reset the store (for example on user logout)
+
+8. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
+
+9. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
+
 #### Install libs
 
-npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save
+`npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save`
+
 
 #### Basic Example
 
@@ -50,7 +79,7 @@ class MessageList extends Component {
     }
 
     renderMessage(messageKey, messageData) {
-        const user = this.props.store.fbStore.get('user_'+messageData.uid);
+        const user = this.props.store.getData('user_'+messageData.uid);
         const userName = user ? user.get('name') : null;
 
         return (
@@ -62,7 +91,7 @@ class MessageList extends Component {
         );
     }
     render() {
-        const messages = this.props.store.fbStore.get('messages');
+        const messages = this.props.store.getData('messages');
         if (!messages) {
             return <div>Loading messages...</div>
         }
@@ -126,9 +155,9 @@ it('allows to subscribe as list and subscribe to children', (done) => {
         fb.child('details').set(details);
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('list');
-            const child1Data = store.fbStore.get('child_child1');
-            const child2Data = store.fbStore.get('child_child2');
+            const list = store.getData('list');
+            const child1Data = store.getData('child_child1');
+            const child2Data = store.getData('child_child2');
             if (list && child1Data && child2Data) {
                 expect(list.entries()).toEqual([['child1', 1], ['child2', 1]]);
                 expect(child1Data.entries()).toEqual([[primitiveKey, 'child1Detail']]);
@@ -177,9 +206,9 @@ it('allows to subscribe as list and subscribe to children', (done) => {
         fb.child('products').set(products);
 
         disposer = autorun(() => {
-            const orderItem1 = store.fbStore.get('orderItem1');
-            const user1Data = store.fbStore.get('users_user1');
-            const product51Data = store.fbStore.get('products_product51');
+            const orderItem1 = store.getData('orderItem1');
+            const user1Data = store.getData('users_user1');
+            const product51Data = store.getData('products_product51');
             if (orderItem1 && user1Data && product51Data) {
                 expect(orderItem1.entries()).toEqual([['productKey', 'product51'], ['userKey', 'user1']]);
                 expect(user1Data.entries()).toEqual([[primitiveKey, 'user1 Detail']]);

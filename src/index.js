@@ -42,14 +42,31 @@ function setChild(fbStore, sub, key, val) {
     });
 }
 
+function defaultThrottleConfig() {
+    return {
+        shouldThrottle: true,
+        maxQueueSize: 100,
+        queueingTimeMs: 20
+    }
+}
+
 class CallQueue {
-    constructor() {
+    constructor(config) {
         this.queue = [];
         this.timeout = null;
-        this.maxQueueSize = 100;
-        this.queueingTimeMs = 20;
+
+        config = config || defaultThrottleConfig();
+        this.shouldThrottle = config.shouldThrottle;
+        this.maxQueueSize = config.maxQueueSize;
+        this.queueingTimeMs = config.queueingTimeMs;
     }
     add(call) {
+        if (!this.shouldThrottle) {
+            //Not throttling, call immediately without queueing
+            call();
+            return;
+        }
+
         if (this.queue.length > this.maxQueueSize ) {
             this.drain();
         }
@@ -70,8 +87,8 @@ class CallQueue {
     }
 }
 
-function createFirebaseSubscriber(store, fb) {
-    const queue = new CallQueue();
+function createFirebaseSubscriber(store, fb, config) {
+    const queue = new CallQueue((config || {}).throttle);
 
     const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
@@ -163,15 +180,26 @@ function createFirebaseSubscriber(store, fb) {
 class MobxFirebaseStore {
     //TODO dependency injection of mobx & firebase-nest?
 
-    constructor(fb) {
+    constructor(fb, config) {
         //data that will be populated directly from firebase
         this.fbStore = map({});
 
         this.fb = fb; //a Firebase instance pointing to root URL for the app
-        const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createFirebaseSubscriber(this, this.fb);
+        const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createFirebaseSubscriber(this, this.fb, config);
         this.subscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
+    }
+
+    getData(subKey) {
+        return this.fbStore.get(subKey);
+    }
+
+    reset() {
+        transaction(() => {
+            this.unsubscribeAll();
+            this.fbStore.clear();
+        });
     }
 }
 

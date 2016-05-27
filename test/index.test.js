@@ -44,7 +44,7 @@ describe('MobxFirebaseStore', () => {
             path: 'data'
         }]);
         disposer = autorun(() => {
-            const data = store.fbStore.get('data');
+            const data = store.getData('data');
             if (data) {
                 expect(data.entries()).toEqual([]);
                 unsub();
@@ -61,7 +61,7 @@ describe('MobxFirebaseStore', () => {
             path: 'data'
         }]);
         disposer = autorun(() => {
-            const data = store.fbStore.get('data');
+            const data = store.getData('data');
             if (data) {
                 expect(data.entries()).toEqual([]);
                 unsub();
@@ -84,7 +84,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('data').set(data);
 
         disposer = autorun(() => {
-            const data = store.fbStore.get('data');
+            const data = store.getData('data');
             if (data) {
                 expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
                 unsub();
@@ -108,7 +108,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('data').set(data);
 
         disposer = autorun(() => {
-            const data = store.fbStore.get('data');
+            const data = store.getData('data');
             if (data) {
                 expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
                 unsub();
@@ -141,9 +141,9 @@ describe('MobxFirebaseStore', () => {
         fb.child('details').set(details);
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('list');
-            const child1Data = store.fbStore.get('child_child1');
-            const child2Data = store.fbStore.get('child_child2');
+            const list = store.getData('list');
+            const child1Data = store.getData('child_child1');
+            const child2Data = store.getData('child_child2');
             if (list && child1Data && child2Data) {
                 expect(list.entries()).toEqual([['child1', 1], ['child2', 1]]);
                 expect(child1Data.entries()).toEqual([[primitiveKey, 'child1Detail']]);
@@ -178,9 +178,9 @@ describe('MobxFirebaseStore', () => {
         fb.child('details').set(details);
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('list');
-            const child1Data = store.fbStore.get('child_child1');
-            const child2Data = store.fbStore.get('child_child2');
+            const list = store.getData('list');
+            const child1Data = store.getData('child_child1');
+            const child2Data = store.getData('child_child2');
             if (list && child1Data && child2Data) {
                 expect(list.entries()).toEqual([['child1', 1], ['child2', 1]]);
                 expect(child1Data.entries()).toEqual([[primitiveKey, 'child1Detail']]);
@@ -229,9 +229,9 @@ describe('MobxFirebaseStore', () => {
         fb.child('products').set(products);
 
         disposer = autorun(() => {
-            const orderItem1 = store.fbStore.get('orderItem1');
-            const user1Data = store.fbStore.get('users_user1');
-            const product51Data = store.fbStore.get('products_product51');
+            const orderItem1 = store.getData('orderItem1');
+            const user1Data = store.getData('users_user1');
+            const product51Data = store.getData('products_product51');
             if (orderItem1 && user1Data && product51Data) {
                 expect(orderItem1.entries()).toEqual([['productKey', 'product51'], ['userKey', 'user1']]);
                 expect(user1Data.entries()).toEqual([[primitiveKey, 'user1 Detail']]);
@@ -284,11 +284,11 @@ describe('MobxFirebaseStore', () => {
         fb.child('users').set(users);
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('list');
+            const list = store.getData('list');
 
             //Users got stored in the userStore
-            const user1 = userStore.fbStore.get('user_user1');
-            const user2 = userStore.fbStore.get('user_user2');
+            const user1 = userStore.getData('user_user1');
+            const user2 = userStore.getData('user_user2');
 
             if (list && user1 && user2) {
                 expect(list.entries()).toEqual([['user1', 1], ['user2', 1]]);
@@ -338,10 +338,10 @@ describe('MobxFirebaseStore', () => {
         fb.child('users').set(users);
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('item');
+            const list = store.getData('item');
 
             //Users got stored in the userStore
-            const user1 = userStore.fbStore.get('user_user1');
+            const user1 = userStore.getData('user_user1');
 
             if (list && user1) {
                 expect(list.entries()).toEqual([['userKey', 'user1']]);
@@ -394,12 +394,12 @@ describe('MobxFirebaseStore', () => {
         let updated = false;
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('list');
+            const list = store.getData('list');
 
             //Users got stored in the userStore
-            const user1 = store.fbStore.get('user_user1');
-            const user2 = store.fbStore.get('user_user2');
-            const user3 = store.fbStore.get('user_user3');
+            const user1 = store.getData('user_user1');
+            const user2 = store.getData('user_user2');
+            const user3 = store.getData('user_user3');
 
             if (list && user1 && user2 && !updated) {
                 expect(user3).toBe(undefined);
@@ -411,6 +411,7 @@ describe('MobxFirebaseStore', () => {
 
                 updated = true;
                 //Update children data
+
                 fb.child('list').set({
                     firstUser: {userKey: 'user2'},
                     secondUser: {userKey: 'user3'}
@@ -470,17 +471,17 @@ describe('MobxFirebaseStore', () => {
         let updated = false;
 
         disposer = autorun(() => {
-            const list = store.fbStore.get('item');
+            const item = store.getData('item');
 
             //Users got stored in the userStore
-            const user1 = store.fbStore.get('user_user1');
-            const user2 = store.fbStore.get('user_user2');
+            const user1 = store.getData('user_user1');
+            const user2 = store.getData('user_user2');
 
-            if (list && user1 && !updated) {
+            if (item && user1 && !updated) {
                 expect(user2).toBe(undefined);
                 expect(store.subscribedRegistry).toContainKeys(['item', 'user_user1']);
                 expect(Object.keys(store.subscribedRegistry).length).toBe(2);
-                expect(list.entries()).toEqual([['userKey', 'user1']]);
+                expect(item.entries()).toEqual([['userKey', 'user1']]);
                 expect(user1.entries()).toEqual([['name', 'name1']]);
 
                 //Update field data
@@ -488,10 +489,164 @@ describe('MobxFirebaseStore', () => {
                 fb.child('item').child('userKey').set('user2');
             }
 
-            if (list && user2) {
+            if (item && user2) {
                 expect(store.subscribedRegistry).toContainKeys(['item', 'user_user2']);
                 expect(Object.keys(store.subscribedRegistry).length).toBe(2);
-                expect(list.entries()).toEqual([['userKey', 'user2']]);
+                expect(item.entries()).toEqual([['userKey', 'user2']]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+                unsub();
+                done();
+            }
+        });
+    });
+
+    it('updates children subscriptions when children change, without throttling', (done) => {
+        const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle:false}});
+
+        const unsub = store.subscribeSubs([{
+            subKey: 'list',
+            asList: true,
+            forEachChild: {
+                childSubs: (childKey, arg1, arg2, childVal) => {
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+childVal.userKey,
+                        asValue:true,
+                        path: 'users/'+childVal.userKey
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that childVal is the last arg passed to childSubs
+            },
+            path: 'list'
+        }]);
+
+        const list = {
+            firstUser: {userKey: 'user1'},
+            secondUser: {userKey: 'user2'}
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            },
+            user2: {
+                name: "name2"
+            },
+            user3: {
+                name: "name3"
+            }
+        };
+
+        fb.child('list').set(list);
+        fb.child('users').set(users);
+
+        let updated = false;
+
+        disposer = autorun(() => {
+            const list = store.getData('list');
+
+            //Users got stored in the userStore
+            const user1 = store.getData('user_user1');
+            const user2 = store.getData('user_user2');
+            const user3 = store.getData('user_user3');
+
+            if (list && user1 && user2 && !updated) {
+                expect(user3).toBe(undefined);
+                expect(store.subscribedRegistry).toContainKeys(['list', 'user_user1', 'user_user2']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(3);
+                expect(list.entries()).toEqual([['firstUser', {userKey:'user1'}], ['secondUser', {userKey:'user2'}]]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+
+                updated = true;
+                //Update children data
+
+                setTimeout(() => {
+                    fb.child('list').set({
+                        firstUser: {userKey: 'user2'},
+                        secondUser: {userKey: 'user3'}
+                    })
+                }, 1)
+            }
+
+            if (list && user2 && user3 && list.get('secondUser').userKey == 'user3') {
+                expect(store.subscribedRegistry).toContainKeys(['list', 'user_user2', 'user_user3']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(3);
+
+                expect(list.entries()).toEqual([['firstUser', {userKey:'user2'}], ['secondUser', {userKey:'user3'}]]);
+                expect(user2.entries()).toEqual([['name', 'name2']]);
+                expect(user3.entries()).toEqual([['name', 'name3']]);
+
+                unsub();
+                done();
+            }
+        });
+    });
+
+    it('updates field subscriptions when field values change, without throttling', (done) => {
+        const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle:false}});
+
+        const unsub = store.subscribeSubs([{
+            subKey: 'item',
+            asValue: true,
+            forFields: [{
+                fieldKey: 'userKey',
+                fieldSubs: (fieldVal, arg1, arg2) => {
+                    expect(arg1).toBe('arg1');
+                    expect(arg2).toBe('arg2');
+                    return [{
+                        subKey:'user_'+fieldVal,
+                        asValue:true,
+                        path: 'users/'+fieldVal
+                    }]
+                },
+                args: ['arg1', 'arg2'] //just to show that you can pass args to fieldSubs
+            }],
+            path: 'item'
+        }]);
+
+        const item = {
+            userKey: 'user1'
+        };
+
+        const users = {
+            user1: {
+                name: "name1"
+            },
+            user2: {
+                name: "name2"
+            }
+        };
+
+        fb.child('item').set(item);
+        fb.child('users').set(users);
+
+        let updated = false;
+
+        disposer = autorun(() => {
+            const item = store.getData('item');
+
+            //Users got stored in the userStore
+            const user1 = store.getData('user_user1');
+            const user2 = store.getData('user_user2');
+
+            if (item && user1 && !updated) {
+                expect(user2).toBe(undefined);
+                expect(store.subscribedRegistry).toContainKeys(['item', 'user_user1']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(2);
+                expect(item.entries()).toEqual([['userKey', 'user1']]);
+                expect(user1.entries()).toEqual([['name', 'name1']]);
+
+                //Update field data
+                updated = true;
+                setTimeout(() => fb.child('item').child('userKey').set('user2'), 1);
+            }
+
+            if (item && user2 && item.get('userKey') == 'user2') {
+                expect(store.subscribedRegistry).toContainKeys(['item', 'user_user2']);
+                expect(Object.keys(store.subscribedRegistry).length).toBe(2);
+                expect(item.entries()).toEqual([['userKey', 'user2']]);
                 expect(user2.entries()).toEqual([['name', 'name2']]);
                 unsub();
                 done();

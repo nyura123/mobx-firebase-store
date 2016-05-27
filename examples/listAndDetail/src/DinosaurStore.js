@@ -14,16 +14,16 @@ export default class DinosaurStore extends MobxFirebaseStore {
 
     //getters
     detail(dinosaurKey) {
-        return this.fbStore.get(detailStr + dinosaurKey);
+        return this.getData(detailStr + dinosaurKey);
     }
     score(dinosaurKey) {
         //primitive value
-        const scoreNode = this.fbStore.get(scoreStr + dinosaurKey);
+        const scoreNode = this.getData(scoreStr + dinosaurKey);
         if (!scoreNode) return undefined;
         return scoreNode.get(primitiveKey);
     }
     all() {
-        return this.fbStore.get(allStr)
+        return this.getData(allStr)
     }
 
     //subs -- all paths should be relative to config.fbUrl
