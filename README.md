@@ -19,9 +19,9 @@
 
 5. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
 
- * `onData` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
- * `resolveFirebaseQuery` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
- * `onWillSubscribe`, `onWillUnsubscribe`
+ * `onData(type, snapshot, sub)` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
+ * `resolveFirebaseQuery(sub)` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
+ * `onWillSubscribe(sub)`, `onWillUnsubscribe(subKey)`
 
 6. Exposes `subscribedRegistry` which shows how many subscribers are currently listening to each piece of data.
 
@@ -30,6 +30,11 @@
 8. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
 
 9. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
+
+10. By default, data is removed from fbStore cache when it no longer has any subscribers.
+
+11. When subscribing `asList`, `onData` with type=`FB_INIT_VAL` gets the whole initial list as one update.
+
 
 #### Install libs
 

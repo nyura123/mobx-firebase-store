@@ -653,4 +653,32 @@ describe('MobxFirebaseStore', () => {
             }
         });
     });
+
+    it('data is removed on last unsubscribe', (done) => {
+        const unsub = store.subscribeSubs([{
+            subKey: 'data',
+            asValue: true,
+            path: 'data'
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        let sawData = false;
+        disposer = autorun(() => {
+            const data = store.getData('data');
+            if (data) {
+                sawData = true;
+                expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
+                unsub();
+            } else if (sawData) {
+                //we have seen data but now it's gone again - was removed on unsubscribe
+                expect(store.getData('data')).toBe(undefined);
+                done();
+            }
+        });
+    });
 });

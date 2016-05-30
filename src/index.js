@@ -163,12 +163,12 @@ function createFirebaseSubscriber(store, fb, config) {
         },
 
         resolveFirebaseQuery: function (sub) {
-            if (!sub.path) {
-                console.error("mobx-firebase-store expects each sub to have a path: "+sub.subKey);
-            }
-
             if (store.resolveFirebaseQuery) {
                 return store.resolveFirebaseQuery(sub);
+            }
+
+            if (!sub || !sub.path) {
+                console.error("mobx-firebase-store expects each sub to have a path: "+sub.subKey);
             }
             return fb.child(sub.path);
         }
@@ -200,6 +200,14 @@ class MobxFirebaseStore {
             this.unsubscribeAll();
             this.fbStore.clear();
         });
+    }
+
+    onUnsubscribed(subKey) {
+        //Default implementation: remove data when it no longer has any subscribers
+
+        if (!this.subscribedRegistry[subKey]) {
+            this.fbStore.delete(subKey);
+        }
     }
 }
 
