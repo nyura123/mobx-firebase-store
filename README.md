@@ -2,6 +2,21 @@
 
 `MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
 
+#### Basic Example
+
+```
+const store = new MobxFirebaseStore(new Firebase('https://docs-examples.firebaseio.com'));
+//unsub() should be called when we want to unsubscribe
+const unsub = store.subscribeSubs([{
+    subKey: 'msgs',
+    asList: true,
+    path: 'samplechat/messages'
+}]);
+autorun(() => {
+    const data = store.getData('msgs');
+    console.log(data ? data.entries() : data);
+});
+```
 
 #### Features
 
@@ -41,7 +56,7 @@
 `npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save`
 
 
-#### Basic Example
+#### Component Example
 
 ```
 import React, {Component} from 'react';
@@ -52,7 +67,7 @@ import {autoSubscriber} from 'firebase-nest';
 import Firebase from 'firebase';
 
 const store = new MobxFirebaseStore(
-    new Firebase("https://docs-examples.firebaseio.com")
+    new Firebase('https://docs-examples.firebaseio.com')
 )
 
 /*
@@ -67,10 +82,10 @@ class MessageList extends Component {
             forEachChild: {
                 childSubs: (childKey, childVal) => {
                     return [{
-                        subKey: "user_"+childVal.uid,
+                        subKey: 'user_'+childVal.uid,
                         asValue: true,
 
-                        path: "samplechat/users/"+childVal.uid
+                        path: 'samplechat/users/'+childVal.uid
                     }]
                 }
 
@@ -116,7 +131,7 @@ MessageList = autoSubscriber(observer(MessageList));
 ReactDOM.render(<MessageList store={store}/>, document.getElementById('app'));
 ```
 
-#### Example of a React component that subscribes to Firebase and gets data from MobxFirebaseStore:
+#### Another Example of a React component that subscribes to Firebase and gets data from MobxFirebaseStore:
 
 https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDetail
 
@@ -180,13 +195,13 @@ it('allows to subscribe as list and subscribe to children', (done) => {
             forFields: [{
                 fieldKey: 'userKey',
                 fieldSubs: (fieldVal) => {
-                    expect(fieldVal).toEqual("user1");
+                    expect(fieldVal).toEqual('user1');
                     return [{subKey: 'users_' + fieldVal, asValue: true, path: 'users/' + fieldVal}];
                 }
             }, {
                 fieldKey: 'productKey',
                 fieldSubs: (fieldVal) => {
-                    expect(fieldVal).toEqual("product51");
+                    expect(fieldVal).toEqual('product51');
                     return [{subKey: 'products_' + fieldVal, asValue: true, path: 'products/' + fieldVal}];
                 }
             }],

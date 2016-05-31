@@ -168,7 +168,7 @@ function createFirebaseSubscriber(store, fb, config) {
             }
 
             if (!sub || !sub.path) {
-                console.error("mobx-firebase-store expects each sub to have a path: "+sub.subKey);
+                console.error('mobx-firebase-store expects each sub to have a path: '+sub.subKey);
             }
             return fb.child(sub.path);
         }
