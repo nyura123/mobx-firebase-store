@@ -20,35 +20,39 @@ autorun(() => {
 
 #### Features
 
-1. Allows to differentiate between data not being subscribed or loaded (`store.getData(...) === undefined`) vs being empty.
+1. Firebase 3.x is supported (https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDetailFirebase3)
 
-2. Writes to maps are done inside transactions for better performance.
+2. Allows to differentiate between data not being subscribed or loaded (`store.getData(...) === undefined`) vs being empty.
+
+3. Writes to maps are done inside transactions for better performance.
  
-3. Throttles writes by default - this helps if we want to avoid re-rendering too frequently, such as during initial load of data.
+4. Throttles writes by default - this helps if we want to avoid re-rendering too frequently, such as during initial load of data.
 
- To turn off: `const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle: false}})`.
+    To turn off: `const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle: false}})`.
 
- Throttling params can also be tweaked.
+    Throttling params can also be tweaked.
 
-4. `firebase-nest` subscriptions support specifying how to subscribe to child data/fields.
+5. `firebase-nest` subscriptions support specifying how to subscribe to child data/fields.
 
-5. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
+6. `store.loadedPromise(subKey).then(() => {...})` allows to know when data is loaded, for example for deferring initial setup or rendering.
 
- * `onData(type, snapshot, sub)` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
- * `resolveFirebaseQuery(sub)` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
- * `onWillSubscribe(sub)`, `onWillUnsubscribe(subKey)`
+7. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
 
-6. Exposes `subscribedRegistry` which shows how many subscribers are currently listening to each piece of data.
+    * `onData(type, snapshot, sub)` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
+    * `resolveFirebaseQuery(sub)` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
+    * `onWillSubscribe(sub)`, `onWillUnsubscribe(subKey)`
 
-7. `store.reset()` can be used to unsubscribe from all data & reset the store (for example on user logout)
+8. Exposes `subscribedRegistry` which shows how many subscribers are currently listening to each piece of data.
 
-8. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
+9. `store.reset()` can be used to unsubscribe from all data & reset the store (for example on user logout)
 
-9. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
+10. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
 
-10. By default, data is removed from fbStore cache when it no longer has any subscribers.
+11. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
 
-11. When subscribing `asList`, `onData` with type=`FB_INIT_VAL` gets the whole initial list as one update.
+12. By default, data is removed from fbStore cache when it no longer has any subscribers.
+
+13. When subscribing `asList`, `onData` with type=`FB_INIT_VAL` gets the whole initial list as one update.
 
 
 #### Install libs

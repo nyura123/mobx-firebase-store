@@ -654,7 +654,7 @@ describe('MobxFirebaseStore', () => {
         });
     });
 
-    it('data is removed on last unsubscribe', (done) => {
+    it('removes data on last unsubscribe', (done) => {
         const unsub = store.subscribeSubs([{
             subKey: 'data',
             asValue: true,
@@ -679,6 +679,47 @@ describe('MobxFirebaseStore', () => {
                 expect(store.getData('data')).toBe(undefined);
                 done();
             }
+        });
+    });
+
+    it('provides a Promise for subKey loading', (done) => {
+        const unsub = store.subscribeSubs([{
+            subKey: 'list',
+            asValue: true,
+            forEachChild: {
+                childSubs: (childKey, childVal) => {
+                    return [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}]
+                }
+            },
+            path: 'list'
+        }]);
+
+        const list = {
+            child1: 1,
+            child2: 1
+        };
+        const details = {
+            child1: 'child1Detail',
+            child2: 'child2Detail'
+        };
+        fb.child('list').set(list);
+        fb.child('details').set(details);
+
+        const promises = [
+            store.loadedPromise('child_child1'),
+            store.loadedPromise('child_child2'),
+            store.loadedPromise('list')
+        ];
+
+        Promise.all(promises).then(() => {
+            const list = store.getData('list');
+            const child1Data = store.getData('child_child1');
+            const child2Data = store.getData('child_child2');
+            expect(list.entries()).toEqual([['child1', 1], ['child2', 1]]);
+            expect(child1Data.entries()).toEqual([[primitiveKey, 'child1Detail']]);
+            expect(child2Data.entries()).toEqual([[primitiveKey, 'child2Detail']]);
+            unsub();
+            done();
         });
     });
 });

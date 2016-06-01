@@ -10,6 +10,25 @@ import {map, transaction} from 'mobx';
 
 export const primitiveKey = '_primitive';
 
+
+//Firebase 3.x: snapshot.key() has been replaced with snapshot.key
+let getKey = function(snapshot) {
+    if (typeof snapshot.key == 'function') {
+        console.log("mobx-firebase-store: detected pre-3.x firebase snapshot.key()");
+        getKey = legacyGetKey;
+        return legacyGetKey(snapshot);
+    }
+    console.log("mobx-firebase-store: detected ^3.x firebase snapshot.key");
+    getKey = newGetKey;
+    return newGetKey(snapshot);
+};
+function legacyGetKey(snapshot) {
+    return snapshot.key();
+}
+function newGetKey(snapshot) {
+    return snapshot.key;
+}
+
 function setData(fbStore, sub, key, val) {
     transaction(() => {
         if (!fbStore.get(sub.subKey)) {
@@ -90,26 +109,26 @@ class CallQueue {
 function createFirebaseSubscriber(store, fb, config) {
     const queue = new CallQueue((config || {}).throttle);
 
-    const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createNestedFirebaseSubscriber({
+    const {subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
 
             function call() {
-                //console.log('got value ' + type + ' subKey=' + sub.subKey + ' key=' + snapshot.key() + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
+                //console.log('got value ' + type + ' subKey=' + sub.subKey + ' key=' + getKey(snapshot) + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
                 const fbStore = store.fbStore;
 
                 if (sub.asValue) {
-                    setData(fbStore, sub, snapshot.key(), snapshot.val());
+                    setData(fbStore, sub, getKey(snapshot), snapshot.val());
                 } else if (sub.asList) {
                     switch (type) {
                         case FB_INIT_VAL:
-                            setData(fbStore, sub, snapshot.key(), snapshot.val());
+                            setData(fbStore, sub, getKey(snapshot), snapshot.val());
                             break;
                         case FB_CHILD_ADDED:
                         case FB_CHILD_CHANGED:
-                            setChild(fbStore, sub, snapshot.key(), snapshot.val());
+                            setChild(fbStore, sub, getKey(snapshot), snapshot.val());
                             break;
                         case FB_CHILD_REMOVED:
-                            setChild(fbStore, sub, snapshot.key(), null);
+                            setChild(fbStore, sub, getKey(snapshot), null);
                             break;
                     }
                 } else {
@@ -174,7 +193,7 @@ function createFirebaseSubscriber(store, fb, config) {
         }
     });
 
-    return {subscribeSubs, subscribedRegistry, unsubscribeAll};
+    return {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise};
 }
 
 class MobxFirebaseStore {
@@ -185,10 +204,24 @@ class MobxFirebaseStore {
         this.fbStore = map({});
 
         this.fb = fb; //a Firebase instance pointing to root URL for the app
-        const {subscribeSubs, subscribedRegistry, unsubscribeAll} = createFirebaseSubscriber(this, this.fb, config);
+        const {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise}
+            = createFirebaseSubscriber(this, this.fb, config);
+        this.queue = queue;
         this.subscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
+        this.rawLoadedPromise = loadedPromise;
+    }
+
+    loadedPromise(subKey) {
+        return new Promise((resolve, reject) => {
+            this.rawLoadedPromise(subKey).then(() => {
+                function call() {
+                    resolve();
+                }
+                this.queue.add(call);
+            });
+        });
     }
 
     getData(subKey) {
