@@ -32,9 +32,9 @@ autorun(() => {
 
     Throttling params can also be tweaked.
 
-5. `firebase-nest` subscriptions support specifying how to subscribe to child data/fields.
+5. `firebase-nest` subscriptions allow subscribing to whole graphs of data.
 
-6. `store.loadedPromise(subKey).then(() => {...})` allows to know when data is loaded, for example for deferring initial setup or rendering.
+6. `store.subscribeSubsWithPromise` provides a promise that resolves when initial data, including nested/child data, is loaded.
 
 7. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
 

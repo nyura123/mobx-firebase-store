@@ -109,7 +109,7 @@ class CallQueue {
 function createFirebaseSubscriber(store, fb, config) {
     const queue = new CallQueue((config || {}).throttle);
 
-    const {subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise} = createNestedFirebaseSubscriber({
+    const {subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
 
             function call() {
@@ -193,7 +193,7 @@ function createFirebaseSubscriber(store, fb, config) {
         }
     });
 
-    return {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise};
+    return {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise};
 }
 
 class MobxFirebaseStore {
@@ -204,24 +204,31 @@ class MobxFirebaseStore {
         this.fbStore = map({});
 
         this.fb = fb; //a Firebase instance pointing to root URL for the app
-        const {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, loadedPromise}
+        const {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise}
             = createFirebaseSubscriber(this, this.fb, config);
         this.queue = queue;
         this.subscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
-        this.rawLoadedPromise = loadedPromise;
+        this.rawSubscribeSubsWithPromie = subscribeSubsWithPromise;
     }
 
-    loadedPromise(subKey) {
-        return new Promise((resolve, reject) => {
-            this.rawLoadedPromise(subKey).then(() => {
-                function call() {
-                    resolve();
-                }
-                this.queue.add(call);
+    subscribeSubsWithPromise(subs) {
+        const {unsubscribe, promise } = this.rawSubscribeSubsWithPromie(subs);
+
+        //Put resolve/reject on the queue to make sure it is seen after queued up onData callbacks
+        const queuedResolvePromise = new Promise((resolve, reject) => {
+            promise.then((subKey) => {
+                this.queue.add(() => resolve(subKey));
+            }, (error) => {
+                this.queue.add(() => reject(error));
             });
         });
+
+        return {
+            unsubscribe,
+            promise: queuedResolvePromise
+        }
     }
 
     getData(subKey) {
@@ -229,7 +236,7 @@ class MobxFirebaseStore {
     }
 
     reset() {
-        transaction(() => {
+        this.queue.add(() => {
             this.unsubscribeAll();
             this.fbStore.clear();
         });

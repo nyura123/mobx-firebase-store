@@ -251,7 +251,7 @@ describe('MobxFirebaseStore', () => {
             subKey: 'list',
             asList: true,
             forEachChild: {
-                subscribeSubs: userStore.subscribeSubs.bind(userStore),
+                store: userStore,
                 childSubs: (childKey, arg1, arg2, childVal) => {
                     expect(arg1).toBe('arg1');
                     expect(arg2).toBe('arg2');
@@ -307,7 +307,7 @@ describe('MobxFirebaseStore', () => {
             subKey: 'item',
             asValue: true,
             forFields: [{
-                subscribeSubs: userStore.subscribeSubs.bind(userStore),
+                store: userStore,
                 fieldKey: 'userKey',
                 fieldSubs: (fieldVal, arg1, arg2) => {
                     expect(fieldVal).toBe('user1');
@@ -683,7 +683,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('provides a Promise for subKey loading', (done) => {
-        const unsub = store.subscribeSubs([{
+        const subs = [{
             subKey: 'list',
             asValue: true,
             forEachChild: {
@@ -692,7 +692,9 @@ describe('MobxFirebaseStore', () => {
                 }
             },
             path: 'list'
-        }]);
+        }];
+
+        const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
 
         const list = {
             child1: 1,
@@ -705,20 +707,14 @@ describe('MobxFirebaseStore', () => {
         fb.child('list').set(list);
         fb.child('details').set(details);
 
-        const promises = [
-            store.loadedPromise('child_child1'),
-            store.loadedPromise('child_child2'),
-            store.loadedPromise('list')
-        ];
-
-        Promise.all(promises).then(() => {
+        promise.then(() => {
             const list = store.getData('list');
             const child1Data = store.getData('child_child1');
             const child2Data = store.getData('child_child2');
             expect(list.entries()).toEqual([['child1', 1], ['child2', 1]]);
             expect(child1Data.entries()).toEqual([[primitiveKey, 'child1Detail']]);
             expect(child2Data.entries()).toEqual([[primitiveKey, 'child2Detail']]);
-            unsub();
+            unsubscribe();
             done();
         });
     });
