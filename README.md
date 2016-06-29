@@ -4,7 +4,7 @@
 
 #### Basic Example
 
-```
+```js
 const store = new MobxFirebaseStore(new Firebase('https://docs-examples.firebaseio.com'));
 //unsub() should be called when we want to unsubscribe
 const unsub = store.subscribeSubs([{
@@ -62,7 +62,7 @@ autorun(() => {
 
 #### Component Example
 
-```
+```js
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import MobxFirebaseStore from 'mobx-firebase-store';
@@ -150,7 +150,7 @@ Subscribe to a Firebase path and specify how to subscribe to each child or field
 Data flows into the store and gets stored under `subKey`'s specified in the subscriptions.
 
 
-```
+```js
 const fb = new Firebase('https://your-firebase-instance');
 const store = new MobxFirebaseStore(fb);
 import { autorun } from 'mobx';
