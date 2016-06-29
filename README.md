@@ -8,14 +8,18 @@
 const store = new MobxFirebaseStore(new Firebase('https://docs-examples.firebaseio.com'));
 //unsub() should be called when we want to unsubscribe
 const unsub = store.subscribeSubs([{
-    subKey: 'msgs',
+    subKey: 'msgs', //can use any name you want to describe the data source/subscription
     asList: true,
-    path: 'samplechat/messages'
+    path: 'samplechat/messages' //firebase location
 }]);
 autorun(() => {
     const data = store.getData('msgs');
     console.log(data ? data.entries() : data);
 });
+
+//Update firebase data using raw Firebase API.
+//Can wrap in mobx @actions, add methods to a MobxFirebaseStore subclass, etc.
+//store.fb.child('samplechat').child('msgKey1').set(aMessage, (error) => {/*...*/});
 ```
 
 #### Features
