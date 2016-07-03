@@ -38,40 +38,38 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('allows to subscribe and receive empty data as value', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
             asValue: true,
             path: 'data'
         }]);
-        disposer = autorun(() => {
+        promise.then(() => {
             const data = store.getData('data');
-            if (data) {
-                expect(data.entries()).toEqual([]);
-                unsub();
-                done();
-            }
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([]);
+            unsub();
+            done();
         });
     });
 
 
     it('allows to subscribe and receive empty data as list', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
             asList: true,
             path: 'data'
         }]);
-        disposer = autorun(() => {
+        promise.then(() => {
             const data = store.getData('data');
-            if (data) {
-                expect(data.entries()).toEqual([]);
-                unsub();
-                done();
-            }
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([]);
+            unsub();
+            done();
         });
     });
 
     it('allows to subscribe and receive data as value', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
             asValue: true,
             path: 'data'
@@ -83,19 +81,18 @@ describe('MobxFirebaseStore', () => {
         };
         fb.child('data').set(data);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const data = store.getData('data');
-            if (data) {
-                expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
-                unsub();
-                done();
-            }
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
+            unsub();
+            done();
         });
     });
 
 
     it('allows to subscribe and receive data as list', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
             asList: true,
             path: 'data'
@@ -107,7 +104,7 @@ describe('MobxFirebaseStore', () => {
         };
         fb.child('data').set(data);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const data = store.getData('data');
             if (data) {
                 expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
@@ -118,7 +115,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('allows to subscribe as value and subscribe to children', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asValue: true,
             forEachChild: {
@@ -140,7 +137,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('list').set(list);
         fb.child('details').set(details);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const list = store.getData('list');
             const child1Data = store.getData('child_child1');
             const child2Data = store.getData('child_child2');
@@ -155,7 +152,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('allows to subscribe as list and subscribe to children', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asList: true,
             forEachChild: {
@@ -177,7 +174,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('list').set(list);
         fb.child('details').set(details);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const list = store.getData('list');
             const child1Data = store.getData('child_child1');
             const child2Data = store.getData('child_child2');
@@ -192,7 +189,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('allows to subscribe as value and subscribe to fields', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'orderItem1',
             asValue: true,
             forFields: [{
@@ -228,7 +225,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('users').set(users);
         fb.child('products').set(products);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const orderItem1 = store.getData('orderItem1');
             const user1Data = store.getData('users_user1');
             const product51Data = store.getData('products_product51');
@@ -247,7 +244,7 @@ describe('MobxFirebaseStore', () => {
 
         const userStore = new MobxFirebaseStore(fb);
 
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asList: true,
             forEachChild: {
@@ -283,7 +280,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('list').set(list);
         fb.child('users').set(users);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const list = store.getData('list');
 
             //Users got stored in the userStore
@@ -303,7 +300,7 @@ describe('MobxFirebaseStore', () => {
     it('allows to subscribe to fields in another store', (done) => {
         const userStore = new MobxFirebaseStore(fb);
 
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'item',
             asValue: true,
             forFields: [{
@@ -337,7 +334,7 @@ describe('MobxFirebaseStore', () => {
         fb.child('item').set(item);
         fb.child('users').set(users);
 
-        disposer = autorun(() => {
+        promise.then(() => {
             const list = store.getData('item');
 
             //Users got stored in the userStore
@@ -353,7 +350,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('updates children subscriptions when children change', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asList: true,
             forEachChild: {
@@ -433,7 +430,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('updates field subscriptions when field values change', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'item',
             asValue: true,
             forFields: [{
@@ -503,7 +500,7 @@ describe('MobxFirebaseStore', () => {
     it('updates children subscriptions when children change, without throttling', (done) => {
         const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle:false}});
 
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asList: true,
             forEachChild: {
@@ -587,7 +584,7 @@ describe('MobxFirebaseStore', () => {
     it('updates field subscriptions when field values change, without throttling', (done) => {
         const store = new MobxFirebaseStore(fb, {throttle: {shouldThrottle:false}});
 
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'item',
             asValue: true,
             forFields: [{
@@ -639,6 +636,8 @@ describe('MobxFirebaseStore', () => {
                 expect(user1.entries()).toEqual([['name', 'name1']]);
 
                 //Update field data
+                //NOTE: if autorun changes observables synchronously, it doesn't cause it to re-run!
+                //So change them inside setTimeout (the fb.set below is also synchronous)
                 updated = true;
                 setTimeout(() => fb.child('item').child('userKey').set('user2'), 1);
             }
@@ -655,7 +654,7 @@ describe('MobxFirebaseStore', () => {
     });
 
     it('removes data on last unsubscribe', (done) => {
-        const unsub = store.subscribeSubs([{
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
             asValue: true,
             path: 'data'

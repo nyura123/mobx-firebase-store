@@ -37,6 +37,8 @@ autorun(() => {
     Throttling params can also be tweaked.
 
 5. `firebase-nest` subscriptions allow subscribing to whole graphs of data.
+    
+    For example, via a single subscription, subscribe to `items` and to each `items`'s `category`. If an item is ever deleted or its category is changed, the nested category subscription is deleted/changed automatically. 
 
 6. `store.subscribeSubsWithPromise` provides a promise that resolves when initial data, including nested/child data, is loaded.
 
@@ -51,6 +53,8 @@ autorun(() => {
 9. `store.reset()` can be used to unsubscribe from all data & reset the store (for example on user logout)
 
 10. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
+
+    If your component's props or state is ipdated, the subscriptions will be updated automatically.
 
 11. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
 
