@@ -14,14 +14,25 @@ class DinosaurList extends Component {
         //This ensures the component will be re-rendered when those values change
         // and will therefore update its subs
     }
-    static subscribeSubs(subs, props, state) {
+
+    //This can be static, or an instance method where you can use this.setState if you want to display subscription status like below
+    subscribeSubs(subs, props, state) {
         const {store} = props;
-        return store.subscribeSubs(subs);
+        const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
+        this.setState({fetching: true, fetchError: null}, () => {
+            promise.then(
+                () => this.setState({fetching: false}),
+                (error) => this.setState({fetching: false, fetchError: error})
+            );
+        });
+        return unsubscribe;
     }
 
     constructor(props) {
         super(props);
         this.state = {
+            fetching: false,
+            fetchError: null,
             detailDinosaurKey: null
         }
     }
@@ -48,6 +59,12 @@ class DinosaurList extends Component {
     render() {
         const {store} = this.props;
 
+        const { fetching, fetchError } = this.state;
+
+        if (fetchError) {
+            return <div style={{backgroundColor:"red"}}>{fetchError}</div>
+        }
+
         const dinosaurs = store.all();
 
         if (!dinosaurs) {
@@ -58,6 +75,7 @@ class DinosaurList extends Component {
 
         return (
             <div>
+                {fetching && <div>Fetching</div>}
                 <div>Dinosaurs ({dinosaurs.size})</div>
                 <ul>
                     {dinosaurs.entries().map(entry => this.renderRow(entry[0], entry[1]))}
