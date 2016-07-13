@@ -717,4 +717,38 @@ describe('MobxFirebaseStore', () => {
             done();
         });
     });
+
+    it('rejects Promise on subscribe cycle', (done) => {
+        function childSub(childKey) {
+            return [{
+                subKey: childKey,
+                asValue: true,
+                forEachChild: {
+                    childSubs: (child) => {
+                        return childSub(child);
+                    }
+                },
+                path: 'children/'+childKey
+            }];
+        }
+
+        const {unsubscribe, promise} = store.subscribeSubsWithPromise(childSub('child1'));
+
+        const children = {
+            child1: {
+                'child2' : 1
+            },
+            child2: {
+                'child1' : 1 //cycle
+            }
+        };
+        fb.child('children').set(children);
+
+        promise.then(() => {
+            expect(true).toEqual(false);//promise shouldn't be resolved
+        }, (error) => {
+            unsubscribe();
+            done();
+        });
+    });
 });
