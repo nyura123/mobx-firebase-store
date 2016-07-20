@@ -746,6 +746,7 @@ describe('MobxFirebaseStore', () => {
 
         promise.then(() => {
             expect(true).toEqual(false);//promise shouldn't be resolved
+            done();
         }, (error) => {
             unsubscribe();
             done();

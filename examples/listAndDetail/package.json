@@ -7,7 +7,7 @@
     "babel-polyfill": "^6.7.4",
     "babel-runtime": "^6.6.1",
     "firebase": "^2.4.2",
-    "firebase-nest": "0.0.33",
+    "firebase-nest": "^0.0.33",
     "mobx": "^2.2.1",
     "mobx-firebase-store": "^0.1.14",
     "mobx-react": "^3.3.0",
