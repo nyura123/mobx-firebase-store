@@ -31,7 +31,7 @@ const store = new MobxFirebaseStore(new Firebase('https://docs-examples.firebase
 
 //unsubscribe() should be called when we want to unsubscribe
 const { unsubscribe, promise } = store.subscribeSubsWithPromise([{
-    subKey: 'msgs', //can use any name you want to describe the data source/subscription
+    subKey: 'msgs_with_users', //can use any name you want to describe the data source/subscription
     asList: true,
     path: 'samplechat/messages', //firebase location
     forEachChild: {
@@ -50,7 +50,7 @@ promise.then(() => {
 });
 
 const disposer = autorun(() => {
-    const data = store.getData('msgs');
+    const data = store.getData('msgs_with_users');
     console.log('\nmessages:');
     console.log(data ? data.values() : data);
     if (data) {
@@ -95,7 +95,7 @@ const disposer = autorun(() => {
 
 10. Use `firebase-nest` `autoSubscriber` to allow React components to specify their prop- and state-dependent subscriptions and be automatically subscribed/unsubscribed.
 
-    If your component's props or state is ipdated, the subscriptions will be updated automatically.
+    If your component's props or state is updated, the subscriptions will be updated automatically.
 
 11. `firebase-nest` & `autoSubscriber` both minimize unnecessary ref.off()/ref.on() flickering.
 
