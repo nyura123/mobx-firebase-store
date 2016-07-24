@@ -29,6 +29,8 @@
     "firebase": "^2.4.2",
     "firebase-copy": "^0.2.0",
     "firebase-server": "^0.5.4",
+    "firebase-nest": "^0.1.0",
+    "mobx": "^2.2.1",
     "mocha": "^2.4.5",
     "mockery": "^1.7.0",
     "webpack": "^1.13.0"
