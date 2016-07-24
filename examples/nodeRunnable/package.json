@@ -11,6 +11,7 @@
   "dependencies": {
     "mobx": "^2.4.0",
     "mobx-firebase-store": "^0.1.19",
-    "firebase-nest": "^0.1.0"
+    "firebase-nest": "^0.1.0",
+    "firebase": "^2.4.2"
   }
 }
