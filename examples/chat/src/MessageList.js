@@ -7,7 +7,7 @@ import {autoSubscriber} from 'firebase-nest';
  Display messages and users for each message
  */
 
-var dateFmtOptions = {
+const dateFmtOptions = {
     weekday: 'long', year: 'numeric', month: 'short',
     day: 'numeric', hour: '2-digit', minute: '2-digit'
 };
@@ -28,7 +28,7 @@ class MessageList extends Component {
         this.state = {
             newMessageText: null,
             error: null,
-            newMessageUserOptionValue: 'cookiemonster'
+            newMessageUid: 'cookiemonster'
         };
         this.addMessageBound = this.addMessage.bind(this);
     }
@@ -40,8 +40,8 @@ class MessageList extends Component {
     }
 
     addMessage() {
-        const { newMessageText, newMessageUserOptionValue } = this.state;
-        if (!newMessageText || !newMessageUserOptionValue) {
+        const { newMessageText, newMessageUid } = this.state;
+        if (!newMessageText || !newMessageUid) {
             this.setState({error: 'missing text or user selection'});
             return;
         }
@@ -49,7 +49,7 @@ class MessageList extends Component {
         this.props.store.addMessage({
             text: newMessageText,
             timestamp: new Date().getTime(),
-            uid: newMessageUserOptionValue
+            uid: newMessageUid
         }, (error) => {
             //Clear field and show any error
             this.setState({error, newMessageText: null});
@@ -61,10 +61,16 @@ class MessageList extends Component {
 
         return (
             <div style={{border:'1px grey solid'}} key={messageKey}>
-                <div>{messageData.text}</div>
-                <div>Posted {new Date(messageData.timestamp).toLocaleDateString(dateLocale, dateFmtOptions)}</div>
+                <div>
+                    {messageData.text}
+                </div>
+                <div>
+                    Posted {new Date(messageData.timestamp).toLocaleDateString(dateLocale, dateFmtOptions)}
+                </div>
                 {user && <div>By {user.get('first') || ''}{' '}{user.get('last') || ''}</div>}
-                <button onClick={()=>this.deleteMessage(messageKey)}>Delete</button>
+                <button onClick={()=>this.deleteMessage(messageKey)}>
+                    Delete
+                </button>
             </div>
         );
     }
@@ -73,9 +79,11 @@ class MessageList extends Component {
         const users = this.props.store.allUsers();
         if (!users) return null;
         return users.entries().map(entry => {
+            const uid = entry[0];
+            const userData = entry[1];
             return (
-                <option key={entry[0]}
-                    value={entry[0]}>{entry[1].first}{' '}{entry[1].last}
+                <option key={uid} value={uid}>
+                    {userData.first}{' '}{userData.last}
                 </option>
             );
         });
@@ -87,7 +95,7 @@ class MessageList extends Component {
             return <div>Loading messages...</div>
         }
 
-        const { newMessageText, newMessageUserOptionValue, error } = this.state;
+        const { newMessageText, newMessageUid, error } = this.state;
         return (
             <div>
                 {error && <div style={{color:'red'}}>{error}</div>}
@@ -96,10 +104,10 @@ class MessageList extends Component {
                            placeholder='enter text'
                            value={newMessageText} />
                     <select
-                        onChange={(e) => this.setState({newMessageUserOptionValue: e.target.value})}
-                        value={newMessageUserOptionValue}>
-                        <option value=''>Select User</option>
-                        {this.renderUsersOptions()}
+                        onChange={(e) => this.setState({newMessageUid: e.target.value})}
+                        value={newMessageUid}>
+                            <option value=''>Select User</option>
+                            {this.renderUsersOptions()}
                     </select>
                     <button onClick={this.addMessageBound}>Send</button>
                 </div>

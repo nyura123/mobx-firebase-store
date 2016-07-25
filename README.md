@@ -18,6 +18,7 @@ const disposer = autorun(() => {
 });
 
 //Update firebase data using raw Firebase API.
+//See examples/chat.
 //Can wrap in mobx @actions, add methods to a MobxFirebaseStore subclass, etc.
 //store.fb.child('samplechat').child('msgKey1').set(aMessage, (error) => {/*...*/});
 ```
