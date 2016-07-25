@@ -8,8 +8,8 @@ import {autoSubscriber} from 'firebase-nest';
  */
 
 var dateFmtOptions = {
-    weekday: "long", year: "numeric", month: "short",
-    day: "numeric", hour: "2-digit", minute: "2-digit"
+    weekday: 'long', year: 'numeric', month: 'short',
+    day: 'numeric', hour: '2-digit', minute: '2-digit'
 };
 const dateLocale = 'en-US';
 
@@ -27,28 +27,33 @@ class MessageList extends Component {
         super(props);
         this.state = {
             newMessageText: null,
+            error: null,
             newMessageUserOptionValue: 'cookiemonster'
         };
         this.addMessageBound = this.addMessage.bind(this);
     }
 
     deleteMessage(messageKey) {
-        this.props.store.deleteMessage(messageKey);
+        this.props.store.deleteMessage(messageKey, (error) => {
+            this.setState({error});
+        });
     }
 
     addMessage() {
         const { newMessageText, newMessageUserOptionValue } = this.state;
-        if (!newMessageText || !newMessageUserOptionValue) return;
+        if (!newMessageText || !newMessageUserOptionValue) {
+            this.setState({error: 'missing text or user selection'});
+            return;
+        }
 
         this.props.store.addMessage({
             text: newMessageText,
             timestamp: new Date().getTime(),
             uid: newMessageUserOptionValue
+        }, (error) => {
+            //Clear field and show any error
+            this.setState({error, newMessageText: null});
         });
-        //Clear field
-        this.setState({
-            newMessageText: null
-        })
     }
 
     renderMessage(messageKey, messageData) {
@@ -82,12 +87,13 @@ class MessageList extends Component {
             return <div>Loading messages...</div>
         }
 
-        const { newMessageText, newMessageUserOptionValue } = this.state;
+        const { newMessageText, newMessageUserOptionValue, error } = this.state;
         return (
             <div>
+                {error && <div style={{color:'red'}}>{error}</div>}
                 <div>Enter New Message:
                     <input onChange={(e) => this.setState({newMessageText: e.target.value})}
-                           placeholder="enter text"
+                           placeholder='enter text'
                            value={newMessageText} />
                     <select
                         onChange={(e) => this.setState({newMessageUserOptionValue: e.target.value})}

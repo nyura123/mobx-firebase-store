@@ -13,11 +13,15 @@ export default class MessageStore extends MobxFirebaseStore {
     }
 
     //write to firebase
-    addMessage({text, uid, timestamp}) {
-        this.fb.child('chat').child('messages').push({text, uid, timestamp});
+    addMessage({text, uid, timestamp}, cb) {
+        this.fb.child('chat').child('messages').push({text, uid, timestamp}, (error) => {
+            if (cb) cb(error ? error.code : null);
+        });
     }
-    deleteMessage(messageKey) {
-        this.fb.child('chat').child('messages').child(messageKey).set(null);
+    deleteMessage(messageKey, cb) {
+        this.fb.child('chat').child('messages').child(messageKey).set(null, (error) => {
+            if (cb) cb(error ? error.code : null);
+        });
     }
 
     //getters
