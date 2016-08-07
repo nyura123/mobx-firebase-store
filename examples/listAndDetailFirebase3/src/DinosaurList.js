@@ -10,8 +10,8 @@ import RegisterOrLogin from './RegisterOrLogin';
 class DinosaurList extends Component {
     static getSubs(props, state) {
         const {stores} = props;
-        const {store} = stores;
-        return store.allDinosaursSubs();
+        const {store, authStore} = stores;
+        return authStore.authUser() ? store.allDinosaursSubs() : [];
 
         //NOTE: any observable values that are used here must also be used in render()!
         //This ensures the component will be re-rendered when those values change
@@ -63,7 +63,10 @@ class DinosaurList extends Component {
 
     render() {
         const {stores} = this.props;
-        const {store} = stores;
+        const {store, authStore} = stores;
+
+        //NOTE: need this in render() because it's used by getSubs! (even if not needed by render() itself)
+        const authUser = authStore.authUser();
 
         const { fetching, fetchError } = this.state;
 
@@ -73,23 +76,23 @@ class DinosaurList extends Component {
 
         const dinosaurs = store.all();
 
-        if (!dinosaurs) {
-            return <div>Loading all dinosaurs...</div>;
-        }
-
         const {detailDinosaurKey} = this.state;
 
         return (
             <div>
                 <RegisterOrLogin stores={stores} />
+                {!authUser && <div>Register or log in to display dinosaurs</div>}
                 {fetching && <div>Fetching</div>}
-                <div>Dinosaurs ({dinosaurs.size})</div>
-                <ul>
-                    {dinosaurs.entries().map(entry => this.renderRow(entry[0], entry[1]))}
-                </ul>
-
+                {dinosaurs &&
+                <div>
+                    <div>Dinosaurs ({dinosaurs.size})</div>
+                    <ul>
+                        {dinosaurs.entries().map(entry => this.renderRow(entry[0], entry[1]))}
+                    </ul>
+                </div>
+                }
                 {detailDinosaurKey &&
-                    <DinosaurDetail stores={stores} dinosaurKey={detailDinosaurKey}/>
+                <DinosaurDetail stores={stores} dinosaurKey={detailDinosaurKey}/>
                 }
             </div>
         );

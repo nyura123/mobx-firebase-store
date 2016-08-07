@@ -18,6 +18,14 @@ export default class AuthStore {
     watchAuth(onUser, onError) {
      return firebase.auth().onAuthStateChanged(onUser, onError);
     };
+    
+    authUser() {
+        return this.auth.authUser;
+    }
+
+    authError() {
+        return this.auth.authError;
+    }
 
     //This should be called if we have multiple instances of AuthStore.
     // For example, if AuthStore lives inside an App component, call cleanup() in App's componentWillUnmount.

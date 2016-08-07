@@ -10,10 +10,10 @@ import DinosaurList from './DinosaurList';
 
 //Replace apiKey with your key, though you should be able to see this data even without doing that
 const config = {
-    apiKey: "yourKeyGoesHere",
+    apiKey: 'AIzaSyDsVVkVQ1RWPZ2wf6pc73hmynb31-COp4A',//"yourKeyGoesHere",
     authDomain: "localhost",
-    databaseURL: "https://dinosaur-facts.firebaseio.com",
-    storageBucket: "dinosaur-facts.firebaseio.com",
+    databaseURL: 'https://testing-3bba1.firebaseio.com',//"https://dinosaur-facts.firebaseio.com",
+    storageBucket: 'testing-3bba1.firebaseio.com'//"dinosaur-facts.firebaseio.com",
 };
 
 const store = new DinosaurStore(config);

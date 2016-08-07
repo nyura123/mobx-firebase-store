@@ -107,10 +107,9 @@ class RegisterOrLogin extends Component {
         const {localError, inProgress} = this.state;
         const {stores} = this.props;
         const {authStore} = stores;
-        
-        const {auth} = authStore;
-        
-        const {authUser, authError} = auth;
+
+        const authUser = authStore.authUser();
+        const authError = authStore.authError();
         
         return (
             <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
