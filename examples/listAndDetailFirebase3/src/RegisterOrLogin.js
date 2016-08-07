@@ -80,7 +80,7 @@ class RegisterOrLogin extends Component {
         const {authStore} = stores;
 
         this.setState({inProgress: 'Logging Out...'}, () => {
-            authStore.signOut().then(this.resetStateBound);
+            authStore.signOut().then(this.resetStateBound).catch(this.resetStateBound);
         });
     }
 

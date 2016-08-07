@@ -47,7 +47,7 @@ export default class AuthStore {
             })
             .catch(error => {
                 this.auth.authError = error;
-                return error;
+                throw error;
             });
     }
 
@@ -59,7 +59,7 @@ export default class AuthStore {
             })
             .catch(error => {
                 this.auth.authError = error;
-                return error;
+                throw error;
             });
     }
 
@@ -70,7 +70,7 @@ export default class AuthStore {
             })
             .catch(error => {
                 this.auth.authError = error;
-                return error;
+                throw error;
             });
     }
 }
