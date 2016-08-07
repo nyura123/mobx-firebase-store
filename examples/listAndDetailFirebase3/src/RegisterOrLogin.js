@@ -115,8 +115,8 @@ class RegisterOrLogin extends Component {
         return (
             <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
                 {inProgress && <div>{inProgress}</div> }
-                {localError && <div style={{backgroundColor:'red'}}>Error: {JSON.stringify(localError)}</div> }
-                {authError && <div style={{backgroundColor:'red'}}>Error: {JSON.stringify(authError)}</div> }
+                {localError && <div style={{backgroundColor:'red'}}>{localError}</div> }
+                {authError && <div style={{backgroundColor:'red'}}>API Error: {JSON.stringify(authError)}</div> }
                 {authUser && <div>Signed in as {authUser.email}</div> }
                 {!authUser && this.renderLoginForm() }
                 {authUser && this.renderLogoutButton()}

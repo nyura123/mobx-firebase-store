@@ -20,16 +20,11 @@ export default class AuthStore {
     };
 
     //This should be called if we have multiple instances of AuthStore.
-    // For example, if AuthStore lives inside an App component, call reset() in App's componentWillUnmount.
+    // For example, if AuthStore lives inside an App component, call cleanup() in App's componentWillUnmount.
     //If there's only a singleton AuthStore, then it's ok to never call this. 
-    reset() {
-        this.auth = observable({
-            authUser: null,
-            authError: null
-        });
+    cleanup() {
         if (this.unwatchAuth) {
             this.unwatchAuth();
-            this.unwatchAuth = null;
         }
     }
 
@@ -63,13 +58,10 @@ export default class AuthStore {
     signOut() {
         return firebase.auth().signOut()
             .then(() => {
-                this.auth.authUser = null;
                 this.auth.authError = null;
-                return user;
             })
             .catch(error => {
-                this.auth.authUser = null;
-                this.auth.authError = null;
+                this.auth.authError = error;
                 return error;
             });
     }
