@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 
 /* App state and actions */
 import DinosaurStore from './DinosaurStore';
+import AuthStore from './AuthStore';
 import DinosaurList from './DinosaurList';
 
 //Replace apiKey with your key, though you should be able to see this data even without doing that
@@ -16,5 +17,11 @@ const config = {
 };
 
 const store = new DinosaurStore(config);
+const authStore = new AuthStore();
 
-ReactDOM.render(<DinosaurList store={store}/>, document.getElementById('app'));
+const stores = {
+    store,
+    authStore
+}
+
+ReactDOM.render(<DinosaurList stores={stores}/>, document.getElementById('app'));

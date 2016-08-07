@@ -5,7 +5,8 @@ import {autoSubscriber} from 'firebase-nest';
 
 class DinosaurDetail extends Component {
     static getSubs(props, state) {
-        const {store, dinosaurKey} = props;
+        const {stores, dinosaurKey} = props;
+        const {store} = stores;
         return store.dinosaurDetailAndScoreSubs(dinosaurKey);
 
         //NOTE: any observable values that are used here must also be used in render()!
@@ -13,7 +14,8 @@ class DinosaurDetail extends Component {
         // and will therefore update its subs
     }
     static subscribeSubs(subs, props, state) {
-        const {store} = props;
+        const {stores} = props;
+        const {store} = stores;
         return store.subscribeSubs(subs);
     }
 
@@ -26,7 +28,8 @@ class DinosaurDetail extends Component {
     }
 
     render() {
-        const {store, dinosaurKey} = this.props;
+        const {stores, dinosaurKey} = this.props;
+        const {store} = stores;
 
         const detail = store.detail(dinosaurKey);
 

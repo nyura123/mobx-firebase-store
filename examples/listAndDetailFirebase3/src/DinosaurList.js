@@ -5,9 +5,12 @@ import {autoSubscriber} from 'firebase-nest';
 
 import DinosaurDetail from './DinosaurDetail';
 
+import RegisterOrLogin from './RegisterOrLogin';
+
 class DinosaurList extends Component {
     static getSubs(props, state) {
-        const {store} = props;
+        const {stores} = props;
+        const {store} = stores;
         return store.allDinosaursSubs();
 
         //NOTE: any observable values that are used here must also be used in render()!
@@ -17,7 +20,8 @@ class DinosaurList extends Component {
 
     //This can be static, or an instance method where you can use this.setState if you want to display subscription status like below
     subscribeSubs(subs, props, state) {
-        const {store} = props;
+        const {stores} = props;
+        const {store} = stores;
         const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
         this.setState({fetching: true, fetchError: null}, () => {
             promise.then(
@@ -44,7 +48,8 @@ class DinosaurList extends Component {
     }
 
     renderRow(dinosaurKey, dinosaurObj) {
-        const {store} = this.props;
+        const {stores} = this.props;
+        const {store} = stores;
         const score = store.score(dinosaurKey);
         return (
             <div key={dinosaurKey} style={{border:'1px steelblue solid', margin:2}}>
@@ -57,7 +62,8 @@ class DinosaurList extends Component {
     }
 
     render() {
-        const {store} = this.props;
+        const {stores} = this.props;
+        const {store} = stores;
 
         const { fetching, fetchError } = this.state;
 
@@ -75,6 +81,7 @@ class DinosaurList extends Component {
 
         return (
             <div>
+                <RegisterOrLogin stores={stores} />
                 {fetching && <div>Fetching</div>}
                 <div>Dinosaurs ({dinosaurs.size})</div>
                 <ul>
@@ -82,7 +89,7 @@ class DinosaurList extends Component {
                 </ul>
 
                 {detailDinosaurKey &&
-                    <DinosaurDetail store={store} dinosaurKey={detailDinosaurKey}/>
+                    <DinosaurDetail stores={stores} dinosaurKey={detailDinosaurKey}/>
                 }
             </div>
         );
