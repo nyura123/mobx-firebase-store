@@ -64,7 +64,17 @@ const disposer = autorun(() => {
 });
 ```
 
-#### Features
+# Run examples in storybook
+
+Inspired by react-native-web-starter examples.
+
+1. `cd examples-storybook` or `cd examples-storybook-firebase3`
+
+2. `npm install`
+
+3. `npm run storybook`
+
+# Features
 
 1. Firebase 3.x is supported (https://github.com/nyura123/mobx-firebase-store/tree/master/examples/listAndDetailFirebase3)
 

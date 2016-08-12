@@ -7,7 +7,7 @@ const userStr = 'userDetail_';
 const allMsgsStr = 'allMsgs';
 const allUsersStr = 'allUsers';
 
-export default class MessageStore extends MobxFirebaseStore {
+export default class ChatStore extends MobxFirebaseStore {
     constructor(config) {
         super(new Firebase(config.fbUrl));
     }

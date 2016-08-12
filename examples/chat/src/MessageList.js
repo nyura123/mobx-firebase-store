@@ -26,7 +26,7 @@ class MessageList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            newMessageText: null,
+            newMessageText: '',
             error: null,
             newMessageUid: 'cookiemonster'
         };

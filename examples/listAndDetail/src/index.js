@@ -4,12 +4,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 /* App state and actions */
-import DinosaurStore from './DinosaurStore';
-import DinosaurList from './DinosaurList';
+import App from './App';
 
 const config = {
     fbUrl: 'https://dinosaur-facts.firebaseio.com'
-}
-const store = new DinosaurStore(config);
+};
 
-ReactDOM.render(<DinosaurList store={store}/>, document.getElementById('app'));
+ReactDOM.render(<App config={config}/>, document.getElementById('app'));
