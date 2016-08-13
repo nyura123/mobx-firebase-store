@@ -16,9 +16,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var managerEntry = process.env.DEV_BUILD ? _path2.default.resolve(__dirname, '../../src/client/manager') : _path2.default.resolve(__dirname, '../manager');
 
-console.log(_path.resolve(__dirname, '../node_modules'));
-console.log(_path.resolve(__dirname, '../../examples/chat/src/node_modules'));
-
 var config = {
     devtool: '#cheap-module-eval-source-map',
     entry: {
@@ -37,7 +34,10 @@ var config = {
             test: /\.jsx?$/,
             exclude: /node_modules/,
             query: {
-                presets: ['react','es2015']
+                presets: [
+                    require.resolve('babel-preset-react'),
+                    require.resolve('babel-preset-es2015')
+                ]
             }
         }, {
             test: /\.(gif|jpe?g|png|svg)$/,
@@ -54,6 +54,11 @@ var config = {
         }]
     },
     resolve: {
+        root: [
+            _path.resolve(__dirname, '../node_modules')
+        ]
+    },
+    resolveLoader: {
         root: [
             _path.resolve(__dirname, '../node_modules')
         ]

@@ -14,7 +14,7 @@
     "url": "https://github.com/nyura123/mobx-firebase-store/issues"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register",
+    "test": "NODE_ENV=mochatest mocha --compilers js:babel-core/register",
     "compile": "babel --plugins transform-object-assign --optional runtime -d lib/ src/",
     "prepublish": "npm run compile"
   },
