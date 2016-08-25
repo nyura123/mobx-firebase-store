@@ -70,6 +70,9 @@ Inspired by react-native-web-starter examples.
 
 1. `cd examples-storybook` or `cd examples-storybook-firebase3`
 
+  To run firebase3 examples, you need to set your API key in index.js.
+  You can create one at https://console.cloud.google.com, credentials->create credentials->API key->browser key.
+
 2. `npm install`
 
 3. `npm run storybook`
