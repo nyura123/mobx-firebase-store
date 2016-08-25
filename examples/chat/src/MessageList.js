@@ -30,7 +30,7 @@ class MessageList extends Component {
             error: null,
             newMessageUid: 'cookiemonster'
         };
-        this.addMessageBound = this.addMessage.bind(this);
+        this.addMessage = this.addMessage.bind(this);
     }
 
     deleteMessage(messageKey) {
@@ -52,7 +52,7 @@ class MessageList extends Component {
             uid: newMessageUid
         }, (error) => {
             //Clear field and show any error
-            this.setState({error, newMessageText: null});
+            this.setState({error, newMessageText: ''});
         });
     }
 
@@ -109,7 +109,7 @@ class MessageList extends Component {
                             <option value=''>Select User</option>
                             {this.renderUsersOptions()}
                     </select>
-                    <button onClick={this.addMessageBound}>Send</button>
+                    <button onClick={this.addMessage}>Send</button>
                 </div>
                 <div>
                     Messages:
