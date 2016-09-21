@@ -2,6 +2,10 @@
 
 `MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
 
+#### Firebase3 Chat Example
+
+https://github.com/nyura123/firebase-nest-mobx-react/tree/master/examples-storybook-firebase3
+
 #### Basic Example
 
 ```js
