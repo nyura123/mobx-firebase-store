@@ -8,8 +8,7 @@ const scoreStr = 'dinosaurScore_';
 const allStr = 'allDinosaurs';
 
 export default class DinosaurStore extends MobxFirebaseStore {
-    constructor(config) {
-        firebase.initializeApp(config);
+    constructor() {
         super(firebase.database().ref());
     }
 

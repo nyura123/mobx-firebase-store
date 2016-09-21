@@ -9,7 +9,7 @@ import DinosaurList from './DinosaurList';
 
 export default class App extends Component {
     componentWillMount() {
-        this.store = new DinosaurStore(this.props.config);
+        this.store = new DinosaurStore();
         this.authStore = new AuthStore();
         this.stores = {
             store: this.store,

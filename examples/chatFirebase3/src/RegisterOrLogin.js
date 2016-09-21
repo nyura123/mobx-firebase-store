@@ -14,28 +14,12 @@ class RegisterOrLogin extends Component {
         this.resetState = this.resetState.bind(this);
     }
 
-    //componentWillMount/Unmount - not used here, but can use these for routing on auth changes
-    componentWillMount() {
-        const {stores} = this.props;
-        const {authStore} = stores;
-        this.unwatchAuth = authStore.watchAuth(user => {
-           console.log('watchAuth got user? '+(user?'true':'false')+': can perform an imperative action (for example, route to login if user is null)');
-        }, error => {
-            console.log('watchAuth error: '+JSON.stringify(error));
-        });
-    }
-    componentWillUnmount() {
-        if (this.unwatchAuth) {
-            this.unwatchAuth();
-            this.unwatchAuth = null;
-        }
-    }
-
-    resetState() {
+    resetState(authError) {
         this.setState({
             localError: null,
             inProgress: null,
-            password: ''
+            password: '',
+            authError
         });
     }
     
@@ -53,7 +37,9 @@ class RegisterOrLogin extends Component {
             authStore.createUser({
                 email,
                 password
-            }).then(this.resetState).catch(this.resetState);
+            })
+              .then(() => this.resetState())
+              .catch(error => this.resetState(error));
         });
     }
 
@@ -71,16 +57,20 @@ class RegisterOrLogin extends Component {
             authStore.signIn({
                 email,
                 password
-            }).then(this.resetState).catch(this.resetState);
+            })
+              .then(() => this.resetState())
+              .catch(error => this.resetState(error));
         });
     }
 
     logout() {
-        const {stores} = this.props;
-        const {authStore} = stores;
+        const { stores } = this.props;
+        const { authStore } = stores;
 
         this.setState({inProgress: 'Logging Out...'}, () => {
-            authStore.signOut().then(this.resetState).catch(this.resetState);
+            authStore.signOut()
+              .then(() => this.resetState())
+              .catch(error => this.resetState(error));
         });
     }
 
@@ -104,12 +94,11 @@ class RegisterOrLogin extends Component {
     }
 
     render() {
-        const {localError, inProgress} = this.state;
+        const {localError, inProgress, authError} = this.state;
         const {stores} = this.props;
         const {authStore} = stores;
 
         const authUser = authStore.authUser();
-        const authError = authStore.authError();
         
         return (
             <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
