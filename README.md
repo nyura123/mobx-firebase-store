@@ -4,7 +4,7 @@
 
 #### Firebase3 Chat Example
 
-https://github.com/nyura123/firebase-nest-mobx-react/tree/master/examples-storybook-firebase3
+[examples/chatFirebase3](https://github.com/nyura123/firebase-nest-mobx-react/tree/master/examples/chatFirebase3)
 
 #### Basic Example
 
