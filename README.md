@@ -4,6 +4,8 @@
 
 #### Firebase3 Chat Example
 
+Includes auth, derived/denormalized data, error handling, writing to firebase, nested subscriptions
+
 [examples/chatFirebase3](https://github.com/nyura123/firebase-nest-mobx-react)
 
 #### Basic Example
