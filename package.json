@@ -1,6 +1,6 @@
 {
   "name": "mobx-firebase-store",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "mobx store with dynamic firebase subscriptions and data",
   "keywords": [
     "firebase",
@@ -14,8 +14,8 @@
     "url": "https://github.com/nyura123/mobx-firebase-store/issues"
   },
   "scripts": {
-    "test": "NODE_ENV=mochatest mocha --compilers js:babel-core/register",
-    "compile": "babel --plugins transform-object-assign --optional runtime -d lib/ src/",
+    "test": "NODE_ENV=es2015compile mocha --compilers js:babel-core/register",
+    "compile": "NODE_ENV=es2015compile babel --plugins transform-object-assign --optional runtime -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "devDependencies": {

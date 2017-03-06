@@ -1,6 +1,6 @@
 {
 "env": {
-	"mochatest": {
+	"es2015compile": {
   		"presets": ["es2015"]
 	}
 }

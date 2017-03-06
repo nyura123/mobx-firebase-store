@@ -3,6 +3,8 @@ node_modules/
 src/
 test/
 examples/
+examples-storybook/
+examples-storybook-firebase3/
 examples2/
 .babelrc
 npm-debug.log
