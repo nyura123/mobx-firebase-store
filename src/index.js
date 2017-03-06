@@ -6,7 +6,8 @@ import createNestedFirebaseSubscriber, {
     FB_CHILD_REMOVED,
     FB_CHILD_CHANGED } from 'firebase-nest';
 
-import {map, transaction} from 'mobx';
+import {observable, runInAction} from 'mobx';
+const { map } = observable;
 
 export const primitiveKey = '_primitive';
 
@@ -30,7 +31,7 @@ function newGetKey(snapshot) {
 }
 
 function setData(fbStore, sub, key, val) {
-    transaction(() => {
+    runInAction(() => {
         if (!fbStore.get(sub.subKey)) {
             fbStore.set(sub.subKey, map({}));
         }
@@ -46,7 +47,7 @@ function setData(fbStore, sub, key, val) {
 }
 
 function setChild(fbStore, sub, key, val) {
-    transaction(() => {
+    runInAction(() => {
         const record = fbStore.get(sub.subKey);
         if (!record) {
             //TODO error
@@ -100,7 +101,7 @@ class CallQueue {
     drain() {
         const queue = this.queue.slice(0);
         this.queue = [];
-        transaction(() => {
+        runInAction(() => {
             (queue || []).forEach(call => call());
         });
     }

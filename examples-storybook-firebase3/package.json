@@ -9,8 +9,8 @@
   "dependencies": {
     "firebase": "^3.2.1",
     "firebase-nest": "^0.1.0",
-    "mobx": "^2.4.3",
-    "mobx-firebase-store": "^0.1.19",
+    "mobx": "^3.1.3",
+    "mobx-firebase-store": "^1.0.0",
     "mobx-react": "^3.5.5",
     "react": "^15.3.0",
     "react-dom": "^15.2.1"
