@@ -1,5 +1,6 @@
 
 import MobxFirebaseStore from 'mobx-firebase-store';
+import { observable } from 'mobx';
 
 import Firebase from 'firebase';
 
@@ -9,7 +10,8 @@ const allUsersStr = 'allUsers';
 
 export default class ChatStore extends MobxFirebaseStore {
     constructor(config) {
-        super(new Firebase(config.fbUrl));
+        const fb = new Firebase(config.fbUrl);
+        super(fb);
     }
 
     //write to firebase

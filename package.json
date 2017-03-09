@@ -1,6 +1,6 @@
 {
   "name": "mobx-firebase-store",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "mobx store with dynamic firebase subscriptions and data",
   "keywords": [
     "firebase",
@@ -36,7 +36,7 @@
     "webpack": "^1.13.0"
   },
   "peerDependencies": {
-    "firebase-nest": "^0.1.0",
+    "firebase-nest": "^0.2.0",
     "mobx": "^3.1.3"
   }
 }

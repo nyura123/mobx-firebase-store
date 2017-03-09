@@ -148,37 +148,25 @@ function createFirebaseSubscriber(store, fb, config) {
         },
         onSubscribed: (sub)=> {
             if (store.onSubscribed) {
-                function call() {
-                    store.onSubscribed(sub);
-                }
-                queue.add(call);
+                queue.add(() => store.onSubscribed(sub));
             }
         },
         onUnsubscribed: (subKey)=> {
             if (store.onUnsubscribed) {
-                function call() {
-                    store.onUnsubscribed(subKey);
-                }
-                queue.add(call);
+                queue.add(() => store.onUnsubscribed(subKey));
             }
         },
         onWillSubscribe: function (sub) {
             //console.log('Subscribing ' + sub.subKey + ' path=' + sub.path);
             if (store.onWillSubscribe) {
-                function call() {
-                    store.onWillSubscribe(sub);
-                }
-                queue.add(call);
+                queue.add(() => store.onWillSubscribe(sub));
             }
         },
 
         onWillUnsubscribe: function (subKey) {
             //console.log('Unsubscribing ' + subKey + ' ref#=' + subscribedRegistry[subKey].refCount);
             if (store.onWillUnsubscribe) {
-                function call() {
-                    store.onWillUnsubscribe(subKey);
-                }
-                queue.add(call);
+                queue.add(() => store.onWillUnsubscribe(subKey));
             }
         },
 
