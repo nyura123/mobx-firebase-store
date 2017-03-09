@@ -65,7 +65,6 @@ class DinosaurList extends Component {
         const {stores} = this.props;
         const {store, authStore} = stores;
 
-        //NOTE: need this in render() because it's used by getSubs! (even if not needed by render() itself)
         const authUser = authStore.authUser();
 
         const { fetching, fetchError } = this.state;

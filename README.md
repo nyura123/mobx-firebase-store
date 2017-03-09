@@ -59,8 +59,9 @@ export default createAutoSubscriber({
 })(observer(MessageList));
 ```
 
-#### A more advanced example of chat, includes loading indicators, error handling, and observable-dependent getSubs
+#### More advanced examples of chat, including auth
 
+https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3
 https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chat
 
 

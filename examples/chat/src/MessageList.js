@@ -25,7 +25,8 @@ class MessageList extends Component {
 
   subscribeSubs (subs, props, state) {
     this.setState({
-      loading: true
+      loading: true,
+      fetchError: null
     });
     const { promise, unsubscribe } = props.store.subscribeSubsWithPromise(subs);
     promise.then(
