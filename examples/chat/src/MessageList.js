@@ -24,24 +24,27 @@ class MessageList extends Component {
   }
 
   subscribeSubs (subs, props, state) {
+    const { promise, unsubscribe } = props.store.subscribeSubsWithPromise(subs);
+
     this.setState({
       loading: true,
       fetchError: null
+    }, () => {
+      promise.then(
+        () => {
+          this.setState({
+            loading: false
+          });
+        },
+        (error) => {
+          this.setState({
+            loading: false,
+            fetchError: error
+          });
+        }
+      );
     });
-    const { promise, unsubscribe } = props.store.subscribeSubsWithPromise(subs);
-    promise.then(
-      () => {
-        this.setState({
-          loading: false
-        });
-      },
-      (error) => {
-        this.setState({
-          loading: false,
-          fetchError: error
-        });
-      }
-    );
+
     return unsubscribe;
   }
 
@@ -120,7 +123,7 @@ class MessageList extends Component {
     }
 
     toggleSubscription() {
-        //update global observables
+        //update observable
         this.observables.shouldSubscribe = !this.observables.shouldSubscribe;
     }
 

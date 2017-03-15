@@ -33,21 +33,23 @@ class MessageList extends Component {
 
   subscribeSubs(subs) {
     //More advanced version of subscribeSubs with loading indicator and error handling.
+
+    const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
+
     this.setState({
       fetching: true,
       fetchError: null
-    });
-
-    const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
-    promise.then(() => {
-      this.setState({
-        fetching: false
+    }, () => {
+      promise.then(() => {
+        this.setState({
+          fetching: false
+        });
+      }, (error) => {
+        this.setState({
+          fetching: false,
+          fetchError: error
+        })
       });
-    }, (error) => {
-      this.setState({
-        fetching: false,
-        fetchError: error
-      })
     });
 
     return unsubscribe;
