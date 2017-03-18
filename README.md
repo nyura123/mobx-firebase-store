@@ -31,7 +31,11 @@ class MessageList extends Component {
         );
     }
     render() {
-        const messages = store.getData('myMsgs');
+        const messages = store.getData('myMsgs'); //'myMsgs' matches the subKey below
+        
+        //store.getData returns mobx observable map - use keys(), get(), entries(), etc. to render the data
+        //do NOT use set() or other mutations on the map -- updates should be written directly to firebase, and will get reflected in the observable map automatically.
+        
         if (!messages) {
             return <div>Loading messages...</div>
         }
@@ -48,10 +52,10 @@ class MessageList extends Component {
 export default createAutoSubscriber({
     getSubs: (props, state) => {
         return [{
-            subKey: 'myMsgs',
-            asList: true,
-            path: 'samplechat/messages'
-        }];
+            subKey: 'myMsgs', //any unique string describing this subscription; must match getData call
+            asList: true, //or asValue: true. asList will internally subscribe via firebase child_added/removed/changed; asValue via onValue.
+            path: 'samplechat/messages' //firebase location
+        }]; //can add more than one subscription, since getSubs returns an array; can specify nested subscriptions - see advanced examples below
     },
     subscribeSubs: (subs) => {
         return store.subscribeSubs(subs);
