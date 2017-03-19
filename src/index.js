@@ -175,10 +175,11 @@ function createFirebaseSubscriber(store, fb, config) {
                 return store.resolveFirebaseQuery(sub);
             }
 
-            if (!sub || !sub.path) {
-                console.error('mobx-firebase-store expects each sub to have a path: '+sub.subKey);
+            if (!sub || (!sub.path && !sub.resolveFirebaseRef)) {
+                console.error('mobx-firebase-store expects each sub to have a path or resolveFirebaseRef: '+sub.subKey);
             }
-            return fb.child(sub.path);
+
+            return sub.resolveFirebaseRef ? sub.resolveFirebaseRef() : fb.child(sub.path);
         }
     });
 

@@ -54,7 +54,8 @@ export default createAutoSubscriber({
         return [{
             subKey: 'myMsgs', //any unique string describing this subscription; must match getData call
             asList: true, //or asValue: true. asList will internally subscribe via firebase child_added/removed/changed; asValue via onValue.
-            path: 'samplechat/messages' //firebase location
+            path: 'samplechat/messages', //firebase location
+            //instead of path, can specify resolveFirebaseRef: () => fbRef.child('samplechat/messages') -- can use any firebase query here
         }]; //can add more than one subscription, since getSubs returns an array; can specify nested subscriptions - see advanced examples below
     },
     subscribeSubs: (subs) => {
@@ -110,7 +111,6 @@ Inspired by react-native-web-starter examples.
 7. `MobxFirebaseStore` can be extended to optionally implement various callbacks:
 
     * `onData(type, snapshot, sub)` -- be notified on every data update coming in from firebase *after* it has already been applied to observable maps. 
-    * `resolveFirebaseQuery(sub)` -- can implement Firebase queries such as `orderByChild`, `limitToLast`, `startAt`, `endAt`
     * `onWillSubscribe(sub)`, `onWillUnsubscribe(subKey)`
 
 8. Exposes `subscribedRegistry` which shows how many subscribers are currently listening to each piece of data.
@@ -126,6 +126,15 @@ Inspired by react-native-web-starter examples.
 12. By default, data is removed from fbStore cache when it no longer has any subscribers.
 
 13. When subscribing `asList`, `onData` with type=`FB_INIT_VAL` gets the whole initial list as one update.
+
+14. Firebase queries are supported via resolveFirebaseRef function you can set on each sub. Otherwise you can set path:
+    ```js 
+    resolveFirebaseQuery: () => fbRef.child('yourPath')
+    ``` 
+    or
+    ```js 
+    path: 'yourPath'
+    ```
 
 
 

@@ -91,6 +91,28 @@ describe('MobxFirebaseStore', () => {
     });
 
 
+    it('allows to subscribe via resolveFirebaseRef and receive data', (done) => {
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            resolveFirebaseRef: () => fb.child('data')
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            const data = store.getData('data');
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([['field1', 'val1'], ['field2', 'val2']]);
+            unsub();
+            done();
+        });
+    });
+
     it('allows to subscribe and receive data as list', (done) => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
