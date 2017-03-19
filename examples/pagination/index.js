@@ -5,7 +5,7 @@ import {observer} from 'mobx-react';
 import {createAutoSubscriber} from 'firebase-nest';
 import firebase from 'firebase';
 
-const apiKey = 'AIzaSyDkmd0Vch3_GuwS72sb-IgGsFiDDofSI00';
+const apiKey = 'yourApiKey';
 
 const fbApp = firebase.initializeApp({
   apiKey,
