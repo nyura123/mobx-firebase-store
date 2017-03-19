@@ -1,6 +1,6 @@
 {
   "name": "mobx-firebase-store",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "mobx store with dynamic firebase subscriptions and data",
   "keywords": [
     "firebase",
@@ -29,14 +29,14 @@
     "firebase": "^2.4.2",
     "firebase-copy": "^0.2.0",
     "firebase-server": "^0.5.4",
-    "firebase-nest": "^0.1.0",
+    "firebase-nest": "^0.3.0",
     "mobx": "^3.1.3",
     "mocha": "^2.4.5",
     "mockery": "^1.7.0",
     "webpack": "^1.13.0"
   },
   "peerDependencies": {
-    "firebase-nest": "^0.2.0",
+    "firebase-nest": "^0.3.0",
     "mobx": "^3.1.3"
   }
 }

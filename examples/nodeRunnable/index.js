@@ -10,14 +10,12 @@ const subInfo = store.subscribeSubsWithPromise([{
     subKey: 'msgs', //can use any name you want to describe the data source/subscription
     asList: true,
     path: 'samplechat/messages', //firebase location
-    forEachChild: {
-        childSubs: function(messageKey, messageData) {
-            return [{
-                subKey: 'user_'+messageData.uid,
-                asValue: true,
-                path: 'samplechat/users/'+messageData.uid
-            }];
-        }
+    childSubs: function(messageKey, messageData) {
+        return [{
+            subKey: 'user_'+messageData.uid,
+            asValue: true,
+            path: 'samplechat/users/'+messageData.uid
+        }];
     }
 }]);
 

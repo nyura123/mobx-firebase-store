@@ -50,18 +50,61 @@ class MessageList extends Component {
 
 //Subscribe to and observe firebase data
 export default createAutoSubscriber({
+    getSubs: (props, state) => [{
+        subKey: 'myMsgs', //any unique string describing this subscription; must match getData call
+        asList: true, //or asValue: true. asList will internally subscribe via firebase child_added/removed/changed; asValue via onValue.
+        path: 'samplechat/messages', //firebase location
+    }], //can add more than one subscription to this array
+    subscribeSubs: (subs) => store.subscribeSubs(subs)
+})(observer(MessageList));
+```
+
+#### Supports Firebase queries
+
+```js
+export default createAutoSubscriber({
+    getSubs: (props, state) => [{
+        subKey: 'myMsgs',
+        asValue: true, //have to use asValue if using orderBy*
+        resolveFirebaseRef: () => fbRef.child('samplechat/messages').orderByChild('sentTimestamp')
+    }],
+    subscribeSubs: (subs) => store.subscribeSubs(subs)
+})(observer(MessageList));
+```
+
+
+#### Supports nested subscriptions
+
+For each child:
+
+```js
+//...
+    getSubs: (props, state) => [{
+        subKey: 'myMsgs',
+        asValue: true,
+        resolveFirebaseRef: () => fbRef.child('samplechat/messages').orderByChild('sentTimestamp'),
+        childSubs: (messageKey, messageData) => [{
+            subKey: 'user_' + messageData.uid,
+            asValue: true,
+            resolveFirebaseRef: () => fbRef.child('samplechat/users').child(messageData.uid)
+        }] 
+    }],
+//...
+```
+
+Or for specific fields:
+
+```js
     getSubs: (props, state) => {
         return [{
-            subKey: 'myMsgs', //any unique string describing this subscription; must match getData call
-            asList: true, //or asValue: true. asList will internally subscribe via firebase child_added/removed/changed; asValue via onValue.
-            path: 'samplechat/messages', //firebase location
-            //instead of path, can specify resolveFirebaseRef: () => fbRef.child('samplechat/messages') -- can use any firebase query here
-        }]; //can add more than one subscription, since getSubs returns an array; can specify nested subscriptions - see advanced examples below
+            subKey: 'blog_'+props.blogKey,
+            asValue: true,
+            resolveFirebaseRef: () => fbRef.child('blogs').child(props.blogKey), 
+            fieldSubs: {
+                authorKey: (authorKey) => [{subKey: 'user_' + authorKey, asValue: true, path: 'users/' + authorKey}]
+            }
+        }];
     },
-    subscribeSubs: (subs) => {
-        return store.subscribeSubs(subs);
-    }
-})(observer(MessageList));
 ```
 
 #### More advanced examples of chat, including auth

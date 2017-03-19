@@ -68,6 +68,42 @@ describe('MobxFirebaseStore', () => {
         });
     });
 
+    it('allows to subscribe and receive null data as value', (done) => {
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            path: 'data'
+        }]);
+
+        fb.child('data').set(null);
+
+        promise.then(() => {
+            const data = store.getData('data');
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([]);
+            unsub();
+            done();
+        });
+    });
+
+    it('allows to subscribe and receive null data as list', (done) => {
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asList: true,
+            path: 'data'
+        }]);
+
+        fb.child('data').set(null);
+
+        promise.then(() => {
+            const data = store.getData('data');
+            expect(data).toNotEqual(undefined);
+            expect(data.entries()).toEqual([]);
+            unsub();
+            done();
+        });
+    });
+
     it('allows to subscribe and receive data as value', (done) => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
@@ -140,11 +176,7 @@ describe('MobxFirebaseStore', () => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asValue: true,
-            forEachChild: {
-                childSubs: (childKey, childVal) => {
-                    return [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}]
-                }
-            },
+            childSubs: (childKey, childVal) => [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}],
             path: 'list'
         }]);
 
@@ -177,11 +209,7 @@ describe('MobxFirebaseStore', () => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'list',
             asList: true,
-            forEachChild: {
-                childSubs: (childKey, childVal) => {
-                    return [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}]
-                }
-            },
+            childSubs: (childKey, childVal) =>  [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}],
             path: 'list'
         }]);
 
@@ -707,11 +735,7 @@ describe('MobxFirebaseStore', () => {
         const subs = [{
             subKey: 'list',
             asValue: true,
-            forEachChild: {
-                childSubs: (childKey, childVal) => {
-                    return [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}]
-                }
-            },
+            childSubs: (childKey, childVal) => [{subKey:'child_'+childKey, asValue:true, path: 'details/'+childKey}],
             path: 'list'
         }];
 
@@ -745,11 +769,7 @@ describe('MobxFirebaseStore', () => {
             return [{
                 subKey: childKey,
                 asValue: true,
-                forEachChild: {
-                    childSubs: (child) => {
-                        return childSub(child);
-                    }
-                },
+                childSubs: (child) => childSub(child),
                 path: 'children/'+childKey
             }];
         }

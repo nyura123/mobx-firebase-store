@@ -16,12 +16,14 @@ export default class DinosaurStore extends MobxFirebaseStore {
     detail(dinosaurKey) {
         return this.getData(detailStr + dinosaurKey);
     }
+    
     score(dinosaurKey) {
         //primitive value
         const scoreNode = this.getData(scoreStr + dinosaurKey);
         if (!scoreNode) return undefined;
         return scoreNode.get(primitiveKey);
     }
+    
     all() {
         return this.getData(allStr)
     }
@@ -35,27 +37,26 @@ export default class DinosaurStore extends MobxFirebaseStore {
             path: 'dinosaurs/' + dinosaurKey
         }]
     }
+    
     dinosaurScoreSubs(dinosaurKey) {
         return [{
             subKey: scoreStr + dinosaurKey,
             asValue: true,
-
             path: 'scores/' + dinosaurKey
         }]
     }
+    
     dinosaurDetailAndScoreSubs(dinosaurKey) {
         let subs = this.dinosaurDetailSubs(dinosaurKey);
         subs = subs.concat(this.dinosaurScoreSubs(dinosaurKey));
         return subs;
     }
+    
     allDinosaursSubs() {
         return [{
             subKey: allStr,
             asList: true,
-            forEachChild: {
-                childSubs: this.dinosaurScoreSubs.bind(this)
-            },
-
+            childSubs: this.dinosaurScoreSubs.bind(this),
             path: 'dinosaurs'
         }]
     }

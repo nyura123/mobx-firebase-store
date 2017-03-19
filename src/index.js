@@ -30,19 +30,28 @@ function newGetKey(snapshot) {
     return snapshot.key;
 }
 
-function setData(fbStore, sub, key, val) {
+function setData(fbStore, sub, snapshot) {
     runInAction(() => {
-        if (!fbStore.get(sub.subKey)) {
-            fbStore.set(sub.subKey, map({}));
+        let m = fbStore.get(sub.subKey);
+        if (!m) {
+            m = map({});
+            fbStore.set(sub.subKey, m);
         }
-        fbStore.get(sub.subKey).clear();
+
+        m.clear();
+
+        const val = snapshot.val();
 
         //Support primitive values by wrapping them in an object
         if (val !== null && typeof val !== 'object') {
-            val = {[primitiveKey]: val};
+            m.merge({[primitiveKey]: val});
+        } else {
+            //Use snapshot.forEach to preserve any ordering.
+            //mobx observable map preserves insertion ordering in its keys(), entries() getters
+            snapshot.forEach((child) => {
+                m.set(getKey(child), child.val());
+            });
         }
-
-        fbStore.get(sub.subKey).merge(val || {});
     });
 }
 
@@ -118,11 +127,11 @@ function createFirebaseSubscriber(store, fb, config) {
                 const fbStore = store.fbStore;
 
                 if (sub.asValue) {
-                    setData(fbStore, sub, getKey(snapshot), snapshot.val());
+                    setData(fbStore, sub, snapshot);
                 } else if (sub.asList) {
                     switch (type) {
                         case FB_INIT_VAL:
-                            setData(fbStore, sub, getKey(snapshot), snapshot.val());
+                            setData(fbStore, sub, snapshot);
                             break;
                         case FB_CHILD_ADDED:
                         case FB_CHILD_CHANGED:

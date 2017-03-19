@@ -19,8 +19,9 @@ const store = new MobxFirebaseStore(fbRef);
 
 /* Playground, showcases getMore and data entry */
 
-function addItem() {
-  return fbRef.child('limitToPlayground').push({text: 'new item'});
+function addItem(sortKey) {
+  sortKey = sortKey || 0;
+  return fbRef.child('limitToPlayground').push({text: 'new item', sortKey});
 }
 
 function deleteItem(key) {
@@ -91,11 +92,13 @@ class LimitToExample extends Component {
   }
 
   addItem() {
+    const { value } = this.state;
     this.setState({
       writeError: null
     }, () => {
-      addItem()
-        .catch((error) => this.setState({writeError: error.code}));
+      addItem(parseInt(value))
+        .then(() => this.setState({value: ''}))
+        .catch((error) => this.setState({writeError: error.code}))
     });
   }
 
@@ -148,15 +151,17 @@ class LimitToExample extends Component {
 
     const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
 
-    const {writeError, fetchError, pagination: {limitTo}} = this.state;
+    const {writeError, fetchError, value, fetching, pagination: {limitTo}} = this.state;
 
     return (
       <div>
         {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
         {writeError && <div style={{color:'red'}}>Error writing to firebase: {JSON.stringify(writeError)}</div>}
         {fetchError && <div style={{color:'red'}}>Error fetching data: {JSON.stringify(fetchError)}</div>}
-
+        <div style={{height: 30}}>{fetching ? 'Loading...' : ''}</div>
         <button onClick={this.addItem}>Add Item</button>
+        <input type='number' placeholder='enter sortKey for new item' value={value || ''} onChange={({target:{value}}) => this.setState({value})} />
+        {' '}
         <button onClick={this.deleteLastItem}>Delete Last Item</button>
         <button onClick={this.deleteAll}>Delete All</button>
         <br />
@@ -177,12 +182,10 @@ function getSubs(props, state) {
   const { pagination: {limitTo} = {}} = state;
   return [{
     subKey: `myData_${limitTo}`,//make key dependent on pagination to trigger resubscription,
-    asList: true,
-    resolveFirebaseRef: () => fbRef.child('limitToPlayground').limitToLast(limitTo)
+    asValue: true, //if using orderBy*, have to get data as value instead of list
+    resolveFirebaseRef: () => fbRef.child('limitToPlayground').orderByChild('sortKey').limitToLast(limitTo)
   }];
 }
 
 //Subscribe to and observe firebase data
-export default createAutoSubscriber({
-    getSubs
-})(observer(LimitToExample));
+export default createAutoSubscriber({getSubs})(observer(LimitToExample));

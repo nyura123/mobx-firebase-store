@@ -52,9 +52,7 @@ export default class DinosaurStore extends MobxFirebaseStore {
         return [{
             subKey: allStr,
             asList: true,
-            forEachChild: {
-                childSubs: this.dinosaurScoreSubs.bind(this)
-            },
+            childSubs: this.dinosaurScoreSubs.bind(this),
 
             path: 'dinosaurs'
         }]
