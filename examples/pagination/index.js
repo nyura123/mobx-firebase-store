@@ -49,8 +49,6 @@ class LimitToExample extends Component {
     this.getOlder = this.getOlder.bind(this);
 
     this.state = {
-      lastKeyAdded: null,
-      startAt: 0,
       pagination: {limitTo},
       prevPagination: null,
 
