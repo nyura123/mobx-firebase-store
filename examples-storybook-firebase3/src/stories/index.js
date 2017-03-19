@@ -2,6 +2,7 @@ import React from 'react';
 import { storiesOf, action, linkTo } from '@kadira/storybook';
 import DinosaurApp from '../../../examples/listAndDetailFirebase3/src/App';
 import ChatApp from '../../../examples/chatFirebase3/chatApp';
+import PaginationExample from '../../../examples/pagination/index';
 
 import firebase from 'firebase';
 const config = {
@@ -23,3 +24,7 @@ storiesOf('Chat', module)
     return <ChatApp />
   });
 
+storiesOf('Pagination example', module)
+  .add('', () => {
+    return <PaginationExample />
+  });

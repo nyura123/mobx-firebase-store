@@ -70,6 +70,11 @@ https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebas
 https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chat
 
 
+#### Example with firebase queries - pagination
+
+https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination
+
+
 #### Required libs
 
 `npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save`
