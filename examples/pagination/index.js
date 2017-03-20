@@ -177,7 +177,7 @@ class LimitToExample extends Component {
   }
 }
 
-//Example of pagination and pagination, based on state
+//Example of pagination based on state
 function getSubs(props, state) {
   const { pagination: {limitTo} = {}} = state;
   return [{
