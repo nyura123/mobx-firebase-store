@@ -1,6 +1,6 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { observable } from 'mobx'
+import Link from 'next/link'
 import { createAutoSubscriber } from 'firebase-nest'
 
   /* Real-time messages */
@@ -15,6 +15,7 @@ class MessageList extends React.Component {
     }
   }
 
+  //used by createAutoSubscriber HOC
   subscribeSubs(subs) {
     //More advanced version of subscribeSubs with loading indicator and error handling.
 
@@ -63,6 +64,9 @@ class MessageList extends React.Component {
 
     return (
       <div>
+        <Link href={'/'}><a>Navigate to self - re-render on client</a></Link>
+        <br />
+        <Link href={'/other'}><a>Navigate to other</a></Link>
         {fetching && !observableMessages && <div>Fetching</div>}
         {fetchError && <div>{fetchError}</div>}
         <div>{this.state.renderTrigger}</div>
@@ -88,5 +92,6 @@ export function getInitialSubs(fbRef) {
 }
 
 export default inject('store')(createAutoSubscriber({
-  getSubs: (props, state) => getInitialSubs(props.store.fbRef())
+  getSubs: (props, state) => getInitialSubs(props.store.fbRef()),
+  //subscribeSubs is defined on the component, can also be passed here
 })(MessageList))
