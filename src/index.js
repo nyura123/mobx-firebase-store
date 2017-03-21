@@ -241,6 +241,17 @@ class MobxFirebaseStore {
         });
     }
 
+    resetFromData(data) {
+        this.fbStore.clear();
+        Object.keys(data || {}).forEach((subKey) => {
+            this.fbStore.set(subKey, observable.map(data[subKey]))
+        });
+    }
+    
+    toJS() {
+        return this.fbStore.toJS();
+    }
+    
     onUnsubscribed(subKey) {
         //Default implementation: remove data when it no longer has any subscribers
 

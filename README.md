@@ -113,6 +113,11 @@ https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebas
 https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chat
 
 
+#### next.js example
+
+https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example
+
+
 #### Example with firebase queries - pagination
 
 https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination

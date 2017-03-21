@@ -1,11 +1,14 @@
 {
   "name": "mobx-firebase-store",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "mobx store with dynamic firebase subscriptions and data",
   "keywords": [
     "firebase",
     "mobx",
     "observable",
+    "ssr",
+    "isomorphic",
+    "server-side rendering",
     "store"
   ],
   "main": "lib/index.js",
