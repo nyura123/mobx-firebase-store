@@ -107,20 +107,13 @@ Or for specific fields:
     },
 ```
 
-#### More advanced examples of chat, including auth
+#### More examples
 
-https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3
-https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chat
+[chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3) - includes auth
 
+[next.js example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example) - server-side rendering with firebase-admin, firebase and mobx
 
-#### next.js example
-
-https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example
-
-
-#### Example with firebase queries - pagination
-
-https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination
+[firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination)
 
 
 #### Required libs

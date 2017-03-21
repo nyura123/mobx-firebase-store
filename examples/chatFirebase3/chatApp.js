@@ -92,7 +92,7 @@ function getLoggedInSubs() {
     subKey: 'myMsgs',
     asList: true,
     resolveFirebaseRef: () => fbRef.child('samplechat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
-    childSubs: (messageKey, messageData) => [
+    childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
       {subKey: 'usrrrrr_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('samplechat/users').child(messageData.uid)}
     ]
   }];

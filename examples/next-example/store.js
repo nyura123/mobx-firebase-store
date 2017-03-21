@@ -50,6 +50,24 @@ class Store {
   }
 }
 
+export function loadInitialData(isServer, appName, getSubs) {
+  const store = initStore(isServer, appName)
+
+  const { promise, unsubscribe } = store.subscribeSubsWithPromise(getSubs(store.fbRef()))
+
+  //Don't forget to unsubscribe.
+  // If on client, don't want to unsubscribe too early so that component's subscribeSubs can be called first
+  // without firebase cache being blown away by this unsubscribe
+  setTimeout(() => unsubscribe(), 1000)
+  
+  return promise.then(() => {
+    return store.toJS()
+  }).catch((e) => {
+    console.error('error loading initial data: ',e)
+    return {}
+  })
+}
+
 export function initStore (isServer, appName, initialData) {
   if (typeof window === 'undefined') {
     return new Store(appName, initialData)

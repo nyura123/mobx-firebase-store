@@ -43,7 +43,7 @@ export default class ChatStore extends MobxFirebaseStore {
             subKey: allMsgsStr, //can use any name you want to describe the data source/subscription
             asList: true,
             path: 'chat/messages', //firebase location
-            childSubs: (messageKey, messageData) => [{
+            childSubs: (messageKey, messageData) => !messageData.uid ? [] : [{
                 subKey: userStr+messageData.uid,
                 asValue: true,
                 path: 'chat/users/'+messageData.uid
