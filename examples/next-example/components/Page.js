@@ -69,7 +69,6 @@ class MessageList extends React.Component {
         <Link href={'/other'}><a>Navigate to other</a></Link>
         {fetching && !observableMessages && <div>Fetching</div>}
         {fetchError && <div>{fetchError}</div>}
-        <div>{this.state.renderTrigger}</div>
         {!!messages && <div>
           Messages:
           {messages.map(entry => this.renderMessage(entry[0], entry[1]))}
@@ -87,7 +86,13 @@ export function getInitialSubs(fbRef) {
     resolveFirebaseRef: () => fbRef.child('chat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
     childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
       {subKey: 'user_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('chat/users').child(messageData.uid)}
-    ]
+    ],
+
+    //Optional - get data callbacks after store data is already updated:
+    onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val()),
+
+    //Optional - transform data before it's stored. Have to return a new object for it to work
+    transformChild: (messageData) => Object.assign({}, messageData, {text: (messageData.text || '').toUpperCase()})
   }]
 }
 

@@ -94,7 +94,13 @@ function getLoggedInSubs() {
     resolveFirebaseRef: () => fbRef.child('samplechat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
     childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
       {subKey: 'usrrrrr_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('samplechat/users').child(messageData.uid)}
-    ]
+    ],
+    
+    //Optional - get data callbacks after store data is already updated:
+    onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val()),
+    
+    //Optional - transform data before it's stored. Have to return a new object for it to work
+    transformChild: (messageData) => Object.assign({}, messageData, {text: (messageData.text || '').toUpperCase()})
   }];
 }
 

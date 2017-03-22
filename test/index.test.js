@@ -133,6 +133,107 @@ describe('MobxFirebaseStore', () => {
         });
     });
 
+    it('triggers sub\'s onData callback', (done) => {
+        let lastVal = null;
+        const onData = (type, snapshot, sub) => {
+            lastVal = snapshot.val();
+        }
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            path: 'data',
+            onData
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            expect(lastVal).toEqual({ field1: 'val1', field2: 'val2' });
+            unsub();
+            done();
+        });
+    });
+
+    it('allows to transform child before it is stored, with asValue', (done) => {
+        const transformChild = (val) => {
+            return val+'...'
+        }
+
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            path: 'data',
+            transformChild
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            expect(store.getData('data').toJS()).toEqual({ field1: 'val1...', field2: 'val2...' });
+            unsub();
+            done();
+        });
+    });
+
+
+    it('allows to transform child before it is stored, with asList', (done) => {
+        const transformChild = (val) => {
+            return val+'...'
+        }
+
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asList: true,
+            path: 'data',
+            transformChild
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            expect(store.getData('data').toJS()).toEqual({ field1: 'val1...', field2: 'val2...' });
+            unsub();
+            done();
+        });
+    });
+
+
+    it('allows to transform value before it is stored', (done) => {
+        const transformValue = (val) => {
+            return Object.assign({}, val, {'field1': 'VAL1'})
+        }
+
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            path: 'data',
+            transformValue
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            expect(store.getData('data').toJS()).toEqual({ field1: 'VAL1', field2: 'val2' });
+            unsub();
+            done();
+        });
+    });
 
     it('allows to subscribe via resolveFirebaseRef and receive data', (done) => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{

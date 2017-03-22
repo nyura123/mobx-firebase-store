@@ -53,13 +53,17 @@ export default createAutoSubscriber({
     getSubs: (props, state) => [{
         subKey: 'myMsgs', //any unique string describing this subscription; must match getData call
         asList: true, //or asValue: true. asList will internally subscribe via firebase child_added/removed/changed; asValue via onValue.
-        path: 'samplechat/messages', //firebase location
+        path: 'samplechat/messages', //firebase location,
+        
+        //Optional - get data callbacks after store data is already updated:
+        onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val())
+        
     }], //can add more than one subscription to this array
     subscribeSubs: (subs) => store.subscribeSubs(subs)
 })(observer(MessageList));
 ```
 
-#### Supports Firebase queries
+#### Supports Firebase queries - filtering and sorting
 
 ```js
 export default createAutoSubscriber({
@@ -73,16 +77,21 @@ export default createAutoSubscriber({
 ```
 
 
+#### Supports data transformation
+
+With `asValue` sub, define `transformValue : (val) => ...` on the sub.
+Or with `asList`, define `transformChild: (val) => ...`.
+
 #### Supports nested subscriptions
 
-For each child:
+For each child, e.g. subscribe to user for each message:
 
 ```js
 //...
     getSubs: (props, state) => [{
         subKey: 'myMsgs',
         asValue: true,
-        resolveFirebaseRef: () => fbRef.child('samplechat/messages').orderByChild('sentTimestamp'),
+        resolveFirebaseRef: () => fbRef.child('samplechat/messages'),
         childSubs: (messageKey, messageData) => [{
             subKey: 'user_' + messageData.uid,
             asValue: true,

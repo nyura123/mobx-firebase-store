@@ -40,34 +40,57 @@ function setData(fbStore, sub, snapshot) {
 
         m.clear();
 
-        const val = snapshot.val();
+        const oldVal = snapshot.val();
+        const newVal = sub.transformValue ? sub.transformValue(oldVal) : oldVal;
+        const val = newVal;
+        const valTransformed = oldVal !== newVal;
 
         //Support primitive values by wrapping them in an object
         if (val !== null && typeof val !== 'object') {
             m.merge({[primitiveKey]: val});
         } else {
-            //Use snapshot.forEach to preserve any ordering.
-            //mobx observable map preserves insertion ordering in its keys(), entries() getters
-            snapshot.forEach((child) => {
-                m.set(getKey(child), child.val());
-            });
+            if (valTransformed) {
+                m.merge(val);
+            } else {
+                //Use snapshot.forEach to preserve any ordering.
+                //mobx observable map preserves insertion ordering in its keys(), entries() getters
+
+                snapshot.forEach((child) => {
+                    const childVal = child.val();
+                    const newChildVal = sub.transformChild ? sub.transformChild(childVal) : childVal;
+                    m.set(getKey(child), newChildVal);
+                });
+            }
         }
     });
 }
 
-function setChild(fbStore, sub, key, val) {
+function setChild(fbStore, sub, snapshot) {
     runInAction(() => {
         const record = fbStore.get(sub.subKey);
         if (!record) {
             //TODO error
-            console.error('Can\'t find record for ' + sub.subKey);
+            console.error('[mobx-firebase-store] setChild: ', sub, 'Can\'t find record for ' + sub.subKey);
             return;
         }
-        if (val !== null && val !== undefined) {
-            record.set(key, val);
-        } else {
-            record.delete(key);
+        
+        const oldVal = snapshot.val();
+        const newVal = sub.transformChild ? sub.transformChild(oldVal) : oldVal;
+        
+        record.set(getKey(snapshot), newVal);
+    });
+}
+
+function removeChild(fbStore, sub, key) {
+    runInAction(() => {
+        const record = fbStore.get(sub.subKey);
+        if (!record) {
+            //TODO error
+            console.error('[mobx-firebase-store] setChild: ', sub, 'Can\'t find record for ' + sub.subKey);
+            return;
         }
+
+        record.delete(key);
     });
 }
 
@@ -116,12 +139,21 @@ class CallQueue {
     }
 }
 
+function validateTransforms(sub) {
+    if (sub.transformChild && sub.transformValue) {
+        console.error('[mobx-firebase-store] cannot use transformChild and transformValue together; use transformChild with asList, transformValue or transformChild with asValue', sub)
+    }
+    else if (sub.asList && sub.transformValue) {
+        console.error('[mobx-firebase-store] should not use transformValue with asList, use transformChild', sub);
+    }
+}
+
 function createFirebaseSubscriber(store, fb, config) {
     const queue = new CallQueue((config || {}).throttle);
 
     const {subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise} = createNestedFirebaseSubscriber({
         onData: function (type, snapshot, sub) {
-
+            
             function call() {
                 //console.log('got value ' + type + ' subKey=' + sub.subKey + ' key=' + getKey(snapshot) + ' path=' + sub.path + ' #=' + (Object.keys(snapshot.val() || {}).length));
                 const fbStore = store.fbStore;
@@ -135,21 +167,24 @@ function createFirebaseSubscriber(store, fb, config) {
                             break;
                         case FB_CHILD_ADDED:
                         case FB_CHILD_CHANGED:
-                            setChild(fbStore, sub, getKey(snapshot), snapshot.val());
+                            setChild(fbStore, sub, snapshot);
                             break;
                         case FB_CHILD_REMOVED:
-                            setChild(fbStore, sub, getKey(snapshot), null);
+                            removeChild(fbStore, sub, getKey(snapshot));
                             break;
                     }
                 } else {
                     //TODO error
-                    console.error('sub.asValue or sub.asList must be true');
+                    console.error('[mobx-firebase-store] sub.asValue or sub.asList must be true');
                     console.error(sub);
                 }
 
-                if (store.onData) {
-                    //Allow store to also react to data, for animations, snackbars, etc.
-                    store.onData(type, snapshot, sub);
+                validateTransforms(sub);
+
+                const callback = sub.onData || (store.onData ? store.onData.bind(store) : null);
+                if (callback) {
+                    //Allow to react to data, for animations, snackbars, etc.
+                    runInAction(() => callback(type, snapshot, sub));
                 }
             }
 
@@ -185,7 +220,7 @@ function createFirebaseSubscriber(store, fb, config) {
             }
 
             if (!sub || (!sub.path && !sub.resolveFirebaseRef)) {
-                console.error('mobx-firebase-store expects each sub to have a path or resolveFirebaseRef: '+sub.subKey);
+                console.error('mobx-firebase-store] expects each sub to have a path or resolveFirebaseRef: '+sub.subKey);
             }
 
             return sub.resolveFirebaseRef ? sub.resolveFirebaseRef() : fb.child(sub.path);
