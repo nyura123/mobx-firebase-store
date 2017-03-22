@@ -244,7 +244,19 @@ class MobxFirebaseStore {
     resetFromData(data) {
         this.fbStore.clear();
         Object.keys(data || {}).forEach((subKey) => {
-            this.fbStore.set(subKey, observable.map(data[subKey]))
+            let obsVal;
+            let val = data[subKey];
+            if (val !== null) {
+                if (Array.isArray(val)) {
+                    obsVal = observable.array(val);
+                }
+                else if (typeof val !== 'object') {
+                    obsVal = observable.map({[primitiveKey]: val});
+                } else {
+                    obsVal = observable.map(val);
+                }
+            }
+            this.fbStore.set(subKey, obsVal);
         });
     }
     

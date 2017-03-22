@@ -37,6 +37,13 @@ describe('MobxFirebaseStore', () => {
         expect(store.fb).toBe(fb);
     });
 
+    it('allows to reset with data', () => {
+        store.resetFromData({'a': 1, 'b': [2], 'c': null});
+        expect(store.getData('a').toJS()).toEqual({[primitiveKey]: 1});
+        expect(store.getData('b').toJS()).toEqual([2]);
+        expect(store.getData('c')).toBe(undefined); //can't store nulls/undefined inside moxStore
+    });
+
     it('allows to subscribe and receive empty data as value', (done) => {
         const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
             subKey: 'data',
