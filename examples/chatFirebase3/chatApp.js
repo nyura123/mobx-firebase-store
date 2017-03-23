@@ -31,7 +31,7 @@ class MessageList extends Component {
     }
   }
 
-  subscribeSubs(subs) {
+  subscribeSubs(subs, props, state) {
     //More advanced version of subscribeSubs with loading indicator and error handling.
 
     const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);

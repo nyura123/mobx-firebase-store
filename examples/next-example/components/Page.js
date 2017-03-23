@@ -1,22 +1,33 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 import { inject, observer } from 'mobx-react'
 import Link from 'next/link'
 import { createAutoSubscriber } from 'firebase-nest'
+import RegisterOrLogin from './RegisterOrLogin'
+import AddMessage from './AddMessage'
+import { limitedMessagesSubs } from '../store'
+
+function deferredUnsubscribe(unsubscribe) {
+  //optimization to avoid flickering when paginating - keep current data for a bit while we wait for new query that includes older items
+  return () => setTimeout(() => unsubscribe(), 1000);
+}
 
   /* Real-time messages */
 @observer
 class MessageList extends React.Component {
+  static propTypes = {
+    store: PropTypes.object.isRequired,
+    limitTo: PropTypes.number
+  }
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      fetching: false,
-      fetchError: null
-    }
+  state = {
+    fetching: false,
+    fetchError: null,
+    limitTo: this.props.limitTo || 1,
+    prevLimitTo: null
   }
 
   //used by createAutoSubscriber HOC
-  subscribeSubs(subs) {
+  subscribeSubs(subs, props, state) {
     //More advanced version of subscribeSubs with loading indicator and error handling.
 
     const { store } = this.props
@@ -39,64 +50,113 @@ class MessageList extends React.Component {
       })
     })
 
-    return unsubscribe
+    return deferredUnsubscribe(unsubscribe)
+  }
+
+  componentDidUpdate() {
+    //TODO only do this if we were already at the bottom
+    //this.scrollToBottom()
+  }
+
+  login = () => {
+    const { store } = this.props
+    store.signIn({email: 'myemail@gmail.com', password: 'mypwd'})
+      .catch((err) => console.error('error signing in: ', err))
+  }
+
+  signUp = () => {
+    const { store } = this.props
+    store.createUser({email: 'myemail@gmail.com', password: 'mypwd'})
+      .catch((err) => console.error('error registering: ', err))
   }
 
   renderMessage(messageKey, messageData) {
     const { store } = this.props
-    const user = messageData && messageData.uid ? (store.getData('user_'+messageData.uid)) : null
+    const user = messageData && messageData.uid ? (store.user(messageData.uid)) : null
     return (
       <div style={{border:'1px grey solid'}} key={messageKey}>
         <div>{messageData.text}</div>
         <div>Posted {new Date(messageData.timestamp).toString()}</div>
         <br />
         <div>User: {JSON.stringify(user)}</div>
+        <br />
+        <button onClick={() => this.deleteMessage(messageKey)}>Delete</button>
       </div>
     )
   }
+
   render() {
-    const { store } = this.props
-    const observableMessages = store.getData('myMsgs')
+    const { store, isProtected } = this.props
+    const { limitTo } = this.state
+    let observableMessages = store.limitedMessages(limitTo)
+
+    //optimization to avoid flickering while paginating - try to get previous subscription's data while we're loading older items
+    if (!observableMessages && this.state.prevLimitTo) {
+      observableMessages = store.limitedMessages(this.state.prevLimitTo)
+    }
 
     const messages = observableMessages ? observableMessages.entries() : null
 
-    const { fetching, fetchError } = this.state
+    const { fetching, fetchError, error } = this.state
+
+    const isLoggedIn = !!store.authUser()
 
     return (
       <div>
         <Link href={'/'}><a>Navigate to self - re-render on client</a></Link>
         <br />
         <Link href={'/other'}><a>Navigate to other</a></Link>
+        <br />
+        <h1><RegisterOrLogin authStore={store} /></h1>
+        <br />
+        <GetOlder getOlder={this.getOlder} />
+        {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
+        {isProtected && !isLoggedIn && <div>Will not subscribe to data if logged out - see getSubs</div>}
         {fetching && !observableMessages && <div>Fetching</div>}
-        {fetchError && <div>{fetchError}</div>}
+        {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
+        {error && <div style={{color:'red'}}>{error}</div>}
         {!!messages && <div>
           Messages:
           {messages.map(entry => this.renderMessage(entry[0], entry[1]))}
         </div>
         }
+        <div style={{float:'left', clear:'both'}} ref={(ref) => { this.messagesEnd = ref }} />
+
+        <div style={{height:40}} />
+
+        <AddMessage />
       </div>
     )
   }
+
+  getOlder = () => {
+    this.setState({
+      limitTo: this.state.limitTo + 3,
+      prevLimitTo: this.state.limitTo
+    })
+  }
+
+  scrollToBottom = () => {
+    this.messagesEnd && this.messagesEnd.scrollIntoView({behavior: "smooth"});
+  }
+
+  deleteMessage = (messageKey) => {
+    this.setState({error: null}, () => {
+      this.props.store.deleteMessage(messageKey)
+        .catch((error) => {
+          this.setState({error: error.code})
+        })
+    })
+  }
 }
 
-export function getInitialSubs(fbRef) {
-  return [{
-    subKey: 'myMsgs',
-    asList: true,
-    resolveFirebaseRef: () => fbRef.child('chat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
-    childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
-      {subKey: 'user_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('chat/users').child(messageData.uid)}
-    ],
-
-    //Optional - get data callbacks after store data is already updated:
-    onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val()),
-
-    //Optional - transform data before it's stored. Have to return a new object for it to work
-    transformChild: (messageData) => Object.assign({}, messageData, {text: (messageData.text || '').toUpperCase()})
-  }]
+const GetOlder = ({getOlder}) => {
+  return (
+    <button style={{fontSize:'20px'}} onClick={getOlder}>Get More </button>
+  )
 }
 
 export default inject('store')(createAutoSubscriber({
-  getSubs: (props, state) => getInitialSubs(props.store.fbRef()),
+  getSubs: (props, state) => props.isProtected && !props.store.authUser() ? [] : limitedMessagesSubs(state.limitTo, props.store.fbRef()),
   //subscribeSubs is defined on the component, can also be passed here
 })(MessageList))
