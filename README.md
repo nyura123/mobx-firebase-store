@@ -59,7 +59,7 @@ export default createAutoSubscriber({
         onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val())
         
     }], //can add more than one subscription to this array
-    subscribeSubs: (subs) => store.subscribeSubs(subs)
+    subscribeSubs: (subs, props, state) => store.subscribeSubs(subs)
 })(observer(MessageList));
 ```
 
@@ -69,10 +69,10 @@ export default createAutoSubscriber({
 export default createAutoSubscriber({
     getSubs: (props, state) => [{
         subKey: 'myMsgs',
-        asValue: true, //have to use asValue if using orderBy*
+        asValue: true, //have to use asValue if using orderBy* and want to preserve the ordering in the observable map
         resolveFirebaseRef: () => fbRef.child('samplechat/messages').orderByChild('sentTimestamp')
     }],
-    subscribeSubs: (subs) => store.subscribeSubs(subs)
+    subscribeSubs: (subs, props, state) => store.subscribeSubs(subs)
 })(observer(MessageList));
 ```
 
@@ -120,7 +120,7 @@ Or for specific fields:
 
 [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3) - includes auth
 
-[next.js example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example) - server-side rendering with firebase-admin, firebase and mobx
+[next.js example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example) - server-side rendering with firebase-admin, firebase and mobx, *and auth*
 
 [firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination)
 

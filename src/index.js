@@ -86,7 +86,7 @@ function removeChild(fbStore, sub, key) {
         const record = fbStore.get(sub.subKey);
         if (!record) {
             //TODO error
-            console.error('[mobx-firebase-store] setChild: ', sub, 'Can\'t find record for ' + sub.subKey);
+            console.error('[mobx-firebase-store] removeChild: ', sub, 'Can\'t find record for ' + sub.subKey);
             return;
         }
 
