@@ -111,7 +111,7 @@ class MessageList extends React.Component {
         <br />
         <GetOlder getOlder={this.getOlder} />
         {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
-        {isProtected && !isLoggedIn && <div>Won't subscribe to data if logged out - see getSubs</div>}
+        {isProtected && !isLoggedIn && <div>Will not subscribe to data if logged out - see getSubs</div>}
         {fetching && !observableMessages && <div>Fetching</div>}
         {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
         {error && <div style={{color:'red'}}>{error}</div>}
