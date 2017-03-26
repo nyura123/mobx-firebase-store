@@ -4,18 +4,26 @@ import Link from 'next/link'
 import { createAutoSubscriber } from 'firebase-nest'
 import RegisterOrLogin from './RegisterOrLogin'
 import AddMessage from './AddMessage'
-import { allMessagesSubs } from '../store'
+import { limitedMessagesSubs } from '../store'
+
+function deferredUnsubscribe(unsubscribe) {
+  //optimization to avoid flickering when paginating - keep current data for a bit while we wait for new query that includes older items
+  return () => setTimeout(() => unsubscribe(), 1000);
+}
 
   /* Real-time messages */
 @observer
 class MessageList extends React.Component {
   static propTypes = {
-    store: PropTypes.object.isRequired
+    store: PropTypes.object.isRequired,
+    limitTo: PropTypes.number
   }
 
   state = {
     fetching: false,
-    fetchError: null
+    fetchError: null,
+    limitTo: this.props.limitTo || 1,
+    prevLimitTo: null
   }
 
   //used by createAutoSubscriber HOC
@@ -42,7 +50,12 @@ class MessageList extends React.Component {
       })
     })
 
-    return unsubscribe
+    return deferredUnsubscribe(unsubscribe)
+  }
+
+  componentDidUpdate() {
+    //TODO only do this if we were already at the bottom
+    //this.scrollToBottom()
   }
 
   login = () => {
@@ -71,9 +84,16 @@ class MessageList extends React.Component {
       </div>
     )
   }
+
   render() {
     const { store, isProtected } = this.props
-    const observableMessages = store.allMessages()
+    const { limitTo } = this.state
+    let observableMessages = store.limitedMessages(limitTo)
+
+    //optimization to avoid flickering while paginating - try to get previous subscription's data while we're loading older items
+    if (!observableMessages && this.state.prevLimitTo) {
+      observableMessages = store.limitedMessages(this.state.prevLimitTo)
+    }
 
     const messages = observableMessages ? observableMessages.entries() : null
 
@@ -88,8 +108,8 @@ class MessageList extends React.Component {
         <Link href={'/other'}><a>Navigate to other</a></Link>
         <br />
         <h1><RegisterOrLogin authStore={store} /></h1>
-        <AddMessage />
         <br />
+        <GetOlder getOlder={this.getOlder} />
         {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
         {isProtected && !isLoggedIn && <div>Won't subscribe to data if logged out - see getSubs</div>}
         {fetching && !observableMessages && <div>Fetching</div>}
@@ -100,8 +120,24 @@ class MessageList extends React.Component {
           {messages.map(entry => this.renderMessage(entry[0], entry[1]))}
         </div>
         }
+        <div style={{float:'left', clear:'both'}} ref={(ref) => { this.messagesEnd = ref }} />
+
+        <div style={{height:40}} />
+
+        <AddMessage />
       </div>
     )
+  }
+
+  getOlder = () => {
+    this.setState({
+      limitTo: this.state.limitTo + 3,
+      prevLimitTo: this.state.limitTo
+    })
+  }
+
+  scrollToBottom = () => {
+    this.messagesEnd && this.messagesEnd.scrollIntoView({behavior: "smooth"});
   }
 
   deleteMessage = (messageKey) => {
@@ -114,7 +150,13 @@ class MessageList extends React.Component {
   }
 }
 
+const GetOlder = ({getOlder}) => {
+  return (
+    <button style={{fontSize:'20px'}} onClick={getOlder}>Get More </button>
+  )
+}
+
 export default inject('store')(createAutoSubscriber({
-  getSubs: (props, state) => props.isProtected && !props.store.authUser() ? [] : allMessagesSubs(props.store.fbRef()),
+  getSubs: (props, state) => props.isProtected && !props.store.authUser() ? [] : limitedMessagesSubs(state.limitTo, props.store.fbRef()),
   //subscribeSubs is defined on the component, can also be passed here
 })(MessageList))

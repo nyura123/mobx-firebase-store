@@ -21,7 +21,7 @@ function initFirebaseApp(appName) {
 
 let store = null
 
-function getFirebaseInfo(appName) {
+export function getFirebaseInfo(appName) {
   if (global.serverFirebase) {
     //firebase-admin
     return {app: null, ref: global.serverFirebase.database().ref()}
@@ -31,8 +31,10 @@ function getFirebaseInfo(appName) {
   }
 }
 
-const allMsgsStr = 'all_msgs'
 const allUsersStr = 'all_users'
+function limitedMsgsStr(limitTo) {
+  return 'msgs_limitTo_'+limitTo
+}
 function usrStr(uid) {
   return 'user_'+uid
 }
@@ -71,7 +73,6 @@ class Store {
   }
 
   //Convenience pass-through methods
-
   toJS() {
     return this.mbStore.toJS()
   }
@@ -86,8 +87,8 @@ class Store {
   }
 
   //Can define getters like getAllMessages, etc
-  allMessages() {
-    return this.mbStore.getData(allMsgsStr)
+  limitedMessages(limitTo) {
+    return this.mbStore.getData(limitedMsgsStr(limitTo))
   }
   
   allUsers() {
@@ -144,10 +145,10 @@ class Store {
   }
 }
 
-export function loadInitialData(appName, getSubs) {
+export function loadInitialData(appName, subs) {
   const store = initStore(appName)
 
-  const { promise, unsubscribe } = store.subscribeSubsWithPromise(getSubs(store.fbRef()))
+  const { promise, unsubscribe } = store.subscribeSubsWithPromise(subs)
 
   //Don't forget to unsubscribe.
   // If on client, don't want to unsubscribe too early so that component's subscribeSubs can be called first
@@ -174,11 +175,12 @@ export function initStore (appName, decodedToken, initialData) {
   }
 }
 
-export function allMessagesSubs(fbRef) {
+export function limitedMessagesSubs(limitTo, fbRef) {
+  limitTo = limitTo || 1
   return [{
-    subKey: allMsgsStr,
-    asList: true,
-    resolveFirebaseRef: () => fbRef.child('chat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
+    subKey: limitedMsgsStr(limitTo), //important to include limitTo in key so subscription gets updated
+    asValue: true, //if order matters and don't want to sort client-side; otherwise use asList: true
+    resolveFirebaseRef: () => fbRef.child('chat/messages').limitToLast(limitTo),
     childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
       {subKey: usrStr(messageData.uid), asValue: true, resolveFirebaseRef: () => fbRef.child('chat/users').child(messageData.uid)}
     ],
@@ -192,7 +194,6 @@ export function allMessagesSubs(fbRef) {
 }
 
 export function allUsersSubs() {
-  console.log('calling allUsersSubs')
   return [{
     subKey: allUsersStr,
     asList: true,

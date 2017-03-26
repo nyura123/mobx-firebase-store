@@ -1,6 +1,6 @@
 import React from 'react'
 import { Provider } from 'mobx-react'
-import { initStore, loadInitialData, allMessagesSubs } from '../store'
+import { initStore, loadInitialData, limitedMessagesSubs, getFirebaseInfo } from '../store'
 import Page from '../components/Page'
 
 function getDecodedToken(req) {
@@ -8,15 +8,20 @@ function getDecodedToken(req) {
 }
 
 export default class Messages extends React.Component {
-  static async getInitialProps ({req}) {
+  static async getInitialProps ({req, query}) {
     const isServer = !!req
 
-    const initialData = await loadInitialData('app', allMessagesSubs)
+    const limitTo = query.limitTo ? parseInt(query.limitTo) : 2
 
-    //saved in server's req.session by /api/login route. see store.js constructor
+    const { app, ref } = getFirebaseInfo()
+
+    //saved in server's req.session by /api/login route. We then pass it to store
+    //so components can query whether user is logged in on the server
     const decodedToken = getDecodedToken(req)
     
-    return { isServer, initialData, decodedToken }
+    const initialData = await loadInitialData('app', limitedMessagesSubs(limitTo, ref))
+    
+    return { isServer, initialData, decodedToken, limitTo }
   }
 
   constructor (props) {
@@ -35,7 +40,7 @@ export default class Messages extends React.Component {
   render () {
     return (
       <Provider store={this.store}>
-        <Page />
+        <Page limitTo={this.props.limitTo} />
       </Provider>
     )
   }

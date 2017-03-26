@@ -18,7 +18,6 @@ class AddMessage extends React.Component {
 
   renderUsersOptions() {
     const users = this.props.store.allUsers()
-    console.log('users ',users)
     if (!users) return null
     return users.entries().map(entry => {
       const uid = entry[0]
