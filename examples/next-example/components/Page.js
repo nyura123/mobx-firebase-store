@@ -57,34 +57,7 @@ class MessageList extends React.Component {
     //TODO only do this if we were already at the bottom
     //this.scrollToBottom()
   }
-
-  login = () => {
-    const { store } = this.props
-    store.signIn({email: 'myemail@gmail.com', password: 'mypwd'})
-      .catch((err) => console.error('error signing in: ', err))
-  }
-
-  signUp = () => {
-    const { store } = this.props
-    store.createUser({email: 'myemail@gmail.com', password: 'mypwd'})
-      .catch((err) => console.error('error registering: ', err))
-  }
-
-  renderMessage(messageKey, messageData) {
-    const { store } = this.props
-    const user = messageData && messageData.uid ? (store.user(messageData.uid)) : null
-    return (
-      <div style={{border:'1px grey solid'}} key={messageKey}>
-        <div>{messageData.text}</div>
-        <div>Posted {new Date(messageData.timestamp).toString()}</div>
-        <br />
-        <div>User: {JSON.stringify(user)}</div>
-        <br />
-        <button onClick={() => this.deleteMessage(messageKey)}>Delete</button>
-      </div>
-    )
-  }
-
+  
   render() {
     const { store, isProtected } = this.props
     const { limitTo } = this.state
@@ -115,16 +88,15 @@ class MessageList extends React.Component {
         {fetching && !observableMessages && <div>Fetching</div>}
         {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
         {error && <div style={{color:'red'}}>{error}</div>}
-        {!!messages && <div>
-          Messages:
-          {messages.map(entry => this.renderMessage(entry[0], entry[1]))}
-        </div>
-        }
+        
+        <Messages messages={messages} store={store} deleteMessage={this.deleteMessage} />
+        
         <div style={{float:'left', clear:'both'}} ref={(ref) => { this.messagesEnd = ref }} />
 
         <div style={{height:40}} />
 
         <AddMessage />
+        
       </div>
     )
   }
@@ -148,6 +120,33 @@ class MessageList extends React.Component {
         })
     })
   }
+}
+
+const Messages = ({store, messages, deleteMessage}) => {
+  if (!messages) return null
+  return (
+    <div>
+      Messages:
+      {messages.map(entry => (
+          <Message key={entry[0]} deleteMessage={deleteMessage} messageKey={entry[0]} message={entry[1]} store={store} />
+        )
+      )}
+    </div>
+  )
+}
+
+const Message = ({store, messageKey, message, deleteMessage}) => {
+  const user = message && message.uid ? (store.user(message.uid)) : null
+  return (
+    <div style={{border:'1px grey solid'}}>
+      <div>{message.text}</div>
+      <div>Posted {new Date(message.timestamp).toString()}</div>
+      <br />
+      <div>User: {JSON.stringify(user)}</div>
+      <br />
+      <button onClick={() => deleteMessage(messageKey)}>Delete</button>
+    </div>
+  )
 }
 
 const GetOlder = ({getOlder}) => {

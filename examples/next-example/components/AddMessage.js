@@ -35,16 +35,19 @@ class AddMessage extends React.Component {
 
     return (
       <div>
-        <div>Enter New Message:
-          <input onChange={(e) => this.setState({newMessageText: e.target.value})}
+        <div><span style={{fontSize:'20px'}}>Enter New Message:</span>
+          <br />
+          *<input onChange={(e) => this.setState({newMessageText: e.target.value})}
                  placeholder='enter text'
                  value={newMessageText} />
-          <select
+          <br />
+          *<select
             onChange={(e) => this.setState({newMessageUid: e.target.value})}
             value={newMessageUid}>
             <option value=''>Select User</option>
             {this.renderUsersOptions()}
           </select>
+          <br />
           <button onClick={this.addMessage}>Send</button>
         </div>
         <button onClick={this.addMany}>Add 1000 - performance test</button>

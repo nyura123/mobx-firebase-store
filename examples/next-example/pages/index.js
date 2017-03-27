@@ -7,14 +7,14 @@ function getDecodedToken(req) {
   return ((req || {}).session || {}).decodedToken
 }
 
-export default class Messages extends React.Component {
+export default class Main extends React.Component {
   static async getInitialProps ({req, query}) {
     const isServer = !!req
 
     const limitTo = query.limitTo ? parseInt(query.limitTo) : 2
 
     const { app, ref } = getFirebaseInfo()
-
+    
     //saved in server's req.session by /api/login route. We then pass it to store
     //so components can query whether user is logged in on the server
     const decodedToken = getDecodedToken(req)
