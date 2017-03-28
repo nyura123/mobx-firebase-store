@@ -45,13 +45,17 @@ function messagesInGiftedChatFormat(store, {limitTo, prevLimitTo}) {
     const msg = entry[1];
     const uid = msg.uid || null;
     const user = (uid ? store.getData(userSubKey(uid)) : null);
+
+    //Gifted message will not update unless msgKey changes. So as user info comes in, add user's info to the message key
+    const userInfoHash = user ? `${user.get('first')}_${user.get('last')}` : ''
+
     return {
-      _id: msgKey,
+      _id: msgKey+userInfoHash,
       text: msg.text || '',
       createdAt: new Date(msg.timestamp),
       user: {
         _id: uid,
-        name: user ? (user.get('first') + ' '+user.get('last')) : 'No User',
+        name: user ? (user.get('first') + ' '+user.get('last')) : '. .',
         //avatar: 'https://facebook.github.io/react/img/logo_og.png'
       }
     }
