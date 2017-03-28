@@ -2,7 +2,7 @@
 
 `MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
 
-#### Component Example
+#### React Component Example
 
 ```js
 import React, {Component} from 'react';
@@ -63,6 +63,8 @@ export default createAutoSubscriber({
 })(observer(MessageList));
 ```
 
+#### react-native is supported - libs and usage are the same
+
 #### Supports Firebase queries - filtering and sorting
 
 ```js
@@ -75,7 +77,6 @@ export default createAutoSubscriber({
     subscribeSubs: (subs, props, state) => store.subscribeSubs(subs)
 })(observer(MessageList));
 ```
-
 
 #### Supports data transformation
 
