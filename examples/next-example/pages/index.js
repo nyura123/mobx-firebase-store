@@ -2,6 +2,7 @@ import React from 'react'
 import { Provider } from 'mobx-react'
 import { initStore, loadInitialData, limitedMessagesSubs, getFirebaseInfo } from '../store'
 import Page from '../components/Page'
+import Head from 'next/head'
 
 function getDecodedToken(req) {
   return ((req || {}).session || {}).decodedToken
@@ -39,9 +40,14 @@ export default class Main extends React.Component {
 
   render () {
     return (
-      <Provider store={this.store}>
-        <Page limitTo={this.props.limitTo} />
-      </Provider>
+      <div>
+        <Head>
+          <title>Main Page</title>
+        </Head>
+        <Provider store={this.store}>
+          <Page limitTo={this.props.limitTo} />
+        </Provider>
+      </div>
     )
   }
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import { Provider } from 'mobx-react'
 import { initStore, loadInitialData, limitedMessagesSubs, getFirebaseInfo } from '../store'
 import Page from '../components/Page'
+import Head from 'next/head'
 
 //Protected route. Also shows how data stays persistent while navigating
 
@@ -56,9 +57,14 @@ export default class Other extends React.Component {
 
   render () {
     return (
-      <Provider store={this.store}>
-        <Page isProtected={true} limitTo={this.props.limitTo} />
-      </Provider>
+      <div>
+        <Head>
+          <title>Other Page</title>
+        </Head>
+        <Provider store={this.store}>
+          <Page isProtected={true} limitTo={this.props.limitTo} />
+        </Provider>
+      </div>
     )
   }
 }
