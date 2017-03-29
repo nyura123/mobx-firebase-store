@@ -123,7 +123,7 @@ Or for specific fields:
 
 [next.js example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example) - server-side rendering with firebase-admin, firebase and mobx, *and auth*
 
-[react-native-gifted-chat example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/react-native-gifted-chat-example)
+[react-native-gifted-chat example](https://github.com/nyura123/gifted-chat-firebase-mobx/tree/master)
 
 [firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination)
 
