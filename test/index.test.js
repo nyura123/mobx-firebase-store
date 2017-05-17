@@ -902,4 +902,35 @@ describe('MobxFirebaseStore', () => {
             done();
         });
     });
+
+    it('allows to have delayed unsubscribes', (done) => {
+
+        const store = new MobxFirebaseStore(fb, {unsubscribeDelayMs: 100});
+
+        const {unsubscribe: unsub, promise} = store.subscribeSubsWithPromise([{
+            subKey: 'data',
+            asValue: true,
+            resolveFirebaseRef: () => fb.child('data')
+        }]);
+
+        const data = {
+            field1: 'val1',
+            field2: 'val2'
+        };
+
+        fb.child('data').set(data);
+
+        promise.then(() => {
+            const unsubPromise = unsub();
+            //Unsubscribe has been scheduled but hasn't happened yet
+            expect(store.subscribedRegistry['data']).toNotBe(undefined);
+            expect(store.subscribedRegistry['data'].refCount).toBe(1);
+            //unsub returns a promise that resolves when the unsubscribe actually done
+            unsubPromise.then(() => {
+                //expect(store.subscribedRegistry['data']).toBe(undefined);
+                done();
+            })
+        });
+    });
+
 });

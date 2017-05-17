@@ -230,6 +230,20 @@ function createFirebaseSubscriber(store, fb, config) {
     return {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise};
 }
 
+function maybeDelayedUnsubscribe(unsubscribe, delayMs) {
+    if (!delayMs) return unsubscribe;
+
+    //New unsubscribe function that unsubscribes after a timeout
+    return () => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                unsubscribe();
+                resolve();
+            }, delayMs);
+        });
+    }
+}
+
 class MobxFirebaseStore {
     //TODO dependency injection of mobx & firebase-nest?
 
@@ -237,20 +251,26 @@ class MobxFirebaseStore {
         //data that will be populated directly from firebase
         this.fbStore = map({});
 
+        this.unsubscribeDelayMs = (config || {}).unsubscribeDelayMs || 0;
+
         this.fb = fb; //a Firebase instance pointing to root URL for the app
         const {queue, subscribeSubs, subscribedRegistry, unsubscribeAll, subscribeSubsWithPromise}
             = createFirebaseSubscriber(this, this.fb, config);
         this.queue = queue;
-        this.subscribeSubs = subscribeSubs;
+        this.rawSubscribeSubs = subscribeSubs;
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
         this.rawSubscribeSubsWithPromie = subscribeSubsWithPromise;
     }
 
+    subscribeSubs(subs) {
+        return maybeDelayedUnsubscribe(this.rawSubscribeSubs(subs), this.unsubscribeDelayMs);
+    }
+
     subscribeSubsWithPromise(subs) {
         const {unsubscribe, promise } = this.rawSubscribeSubsWithPromie(subs);
 
-        //Put resolve/reject on the queue to make sure it is seen after queued up onData callbacks
+        //Put resolve/reject on the queue to make sure it is seen after queued-up onData callbacks
         const queuedResolvePromise = new Promise((resolve, reject) => {
             promise.then((subKey) => {
                 this.queue.add(() => resolve(subKey));
@@ -260,7 +280,7 @@ class MobxFirebaseStore {
         });
 
         return {
-            unsubscribe,
+            unsubscribe: maybeDelayedUnsubscribe(unsubscribe, this.unsubscribeDelayMs),
             promise: queuedResolvePromise
         }
     }
