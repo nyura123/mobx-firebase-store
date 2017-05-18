@@ -10,6 +10,7 @@ function getDecodedToken(req) {
 
 export default class Main extends React.Component {
   static async getInitialProps ({req, query}) {
+    console.log('INDEX getInitialProps')
     const isServer = !!req
 
     const limitTo = query.limitTo ? parseInt(query.limitTo) : 2
@@ -31,11 +32,11 @@ export default class Main extends React.Component {
   }
 
   componentDidMount() {
-    console.log('didMount, isServer=',this.props.isServer)
+    console.log('INDEX didMount, isServer=',this.props.isServer)
   }
 
   componentWillUnmount() {
-    console.log('willUnmount, isServer=',this.props.isServer)
+    console.log('INDEX willUnmount, isServer=',this.props.isServer)
   }
 
   render () {
@@ -45,7 +46,7 @@ export default class Main extends React.Component {
           <title>Main Page</title>
         </Head>
         <Provider store={this.store}>
-          <Page limitTo={this.props.limitTo} />
+          <Page title='index.js' limitTo={this.props.limitTo} />
         </Provider>
       </div>
     )

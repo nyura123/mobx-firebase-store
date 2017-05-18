@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 
 import {observer} from 'mobx-react';
 import {autoSubscriber} from 'firebase-nest';
+import Graph from 'react-graph-vis';
 
 import DinosaurDetail from './DinosaurDetail';
 
@@ -62,7 +63,7 @@ class DinosaurList extends Component {
     }
 
     render() {
-        const {stores} = this.props;
+        const {stores, subscriptionGraph} = this.props;
         const {store, authStore} = stores;
 
         const authUser = authStore.authUser();
@@ -76,6 +77,20 @@ class DinosaurList extends Component {
         const dinosaurs = store.all();
 
         const {detailDinosaurKey} = this.state;
+
+      const graphVisOptions = {
+        layout: {
+          hierarchical: true
+        },
+        edges: {
+          color: "#000000"
+        }
+      };
+      const graphVisEvents = {
+        select: function(event) {
+          const { nodes, edges } = event;
+        }
+      }
 
         return (
             <div>
@@ -93,6 +108,10 @@ class DinosaurList extends Component {
                 {detailDinosaurKey &&
                 <DinosaurDetail stores={stores} dinosaurKey={detailDinosaurKey}/>
                 }
+
+              <h1>Subscription Graph</h1>
+              <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+
             </div>
         );
     }

@@ -1,9 +1,11 @@
 
 import React, {Component} from 'react';
-import MobxFirebaseStore from 'mobx-firebase-store';
+import MobxFirebaseStore, {ObservableSubscriptionGraph} from 'mobx-firebase-store';
 import {observer} from 'mobx-react';
 import {createAutoSubscriber} from 'firebase-nest';
 import firebase from 'firebase';
+
+import Graph from 'react-graph-vis';
 
 const apiKey = 'yourApiKey';
 
@@ -16,6 +18,7 @@ const fbApp = firebase.initializeApp({
 
 const fbRef = firebase.database(fbApp).ref();
 const store = new MobxFirebaseStore(fbRef);
+const subscriptionGraph = new ObservableSubscriptionGraph(store);
 
 /* Playground, showcases getMore and data entry */
 
@@ -52,7 +55,6 @@ class LimitToExample extends Component {
     this.state = {
       pagination: {limitTo},
       prevPagination: null,
-
       writeError: null,
       fetchError: null,
       fetching: false
@@ -153,6 +155,20 @@ class LimitToExample extends Component {
 
     const {writeError, fetchError, value, fetching, pagination: {limitTo}} = this.state;
 
+    const graphVisOptions = {
+      layout: {
+        hierarchical: true
+      },
+      edges: {
+        color: "#000000"
+      }
+    };
+    const graphVisEvents = {
+      select: function(event) {
+        const { nodes, edges } = event;
+      }
+    }
+
     return (
       <div>
         {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
@@ -172,6 +188,9 @@ class LimitToExample extends Component {
           {items.map((entry) => this.renderItem(entry[0], entry[1]))}
         </div>
         }
+
+        <h1>Subscription Graph</h1>
+        <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
       </div>
     );
   }

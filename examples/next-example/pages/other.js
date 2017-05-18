@@ -12,6 +12,7 @@ function getDecodedToken(req) {
 
 export default class Other extends React.Component {
   static async getInitialProps ({req, query}) {
+    console.log('OTHER getInitialProps')
     const isServer = !!req
 
     const limitTo = query.limitTo ? parseInt(query.limitTo) : 2
@@ -62,7 +63,7 @@ export default class Other extends React.Component {
           <title>Other Page</title>
         </Head>
         <Provider store={this.store}>
-          <Page isProtected={true} limitTo={this.props.limitTo} />
+          <Page title='other.js' isProtected={true} limitTo={this.props.limitTo} />
         </Provider>
       </div>
     )

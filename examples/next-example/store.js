@@ -1,5 +1,5 @@
 import firebase from 'firebase'
-import MobxFirebaseStore from 'mobx-firebase-store'
+import MobxFirebaseStore, {ObservableSubscriptionGraph} from 'mobx-firebase-store'
 import {loginApi, logoutApi} from './api'
 import {observable, action} from 'mobx'
 
@@ -67,6 +67,10 @@ class Store {
     }
 
     this.mbStore = new MobxFirebaseStore(ref)
+
+    //dev tools to see live subscription graph
+    this.subscriptionGraph = new ObservableSubscriptionGraph(this.mbStore)
+
     if (initialData) {
       this.mbStore.resetFromData(initialData)
     }

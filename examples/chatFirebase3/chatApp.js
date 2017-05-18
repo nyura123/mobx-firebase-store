@@ -1,9 +1,37 @@
 
 import React, {Component} from 'react';
-import MobxFirebaseStore from 'mobx-firebase-store';
+import MobxFirebaseStore, { ObservableSubscriptionGraph } from 'mobx-firebase-store';
 import {observer} from 'mobx-react';
 import {createAutoSubscriber} from 'firebase-nest';
 import firebase from 'firebase';
+
+// import {extras} from 'mobx';
+import Graph from 'react-graph-vis';
+
+//
+// class MobxGraphMaker {
+//   constructor(mobxNode) {
+//    this.nextNodeId = 1;
+//     this.allNodes = [];
+//     this.allEdges = []
+//     this.build(mobxNode);
+//   }
+//
+//   getGraph() {
+//     return {
+//       nodes: this.allNodes,
+//       edges: this.allEdges
+//     }
+//   }
+//
+//   //private
+//   build(mobxNode, parentGraphNode = null) {
+//     const graphNode = {id: this.nextNodeId++, label: mobxNode.name};
+//     this.allNodes.push(graphNode);
+//     parentGraphNode && this.allEdges.push({from: graphNode.id, to: parentGraphNode.id});
+//     (mobxNode.dependencies || []).forEach((mobxDep) => this.build(mobxDep, graphNode));
+//   }
+// }
 
 import RegisterOrLogin from './RegisterOrLogin';
 import AuthStore from './AuthStore';
@@ -19,6 +47,7 @@ const fbApp = firebase.initializeApp({
 
 const fbRef = firebase.database(fbApp).ref();
 const store = new MobxFirebaseStore(fbRef);
+const subscriptionGraph = new ObservableSubscriptionGraph(store);
 const authStore = new AuthStore(fbApp);
 
 /* Real-time messages */
@@ -66,10 +95,27 @@ class MessageList extends Component {
       </div>
     );
   }
+  
   render() {
     const messages = store.getData('myMsgs');
     const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
     const { fetching, fetchError } = this.state;
+
+    //const graph = new MobxGraphMaker(extras.getDependencyTree(this.render.$mobx)).getGraph();
+
+    const graphVisOptions = {
+      layout: {
+        hierarchical: true
+      },
+      edges: {
+        color: "#000000"
+      }
+    };
+    const graphVisEvents = {
+      select: function(event) {
+        const { nodes, edges } = event;
+      }
+    }
 
     return (
       <div>
@@ -82,6 +128,9 @@ class MessageList extends Component {
           {messages.keys().map(messageKey => this.renderMessage(messageKey, messages.get(messageKey)))}
         </div>
         }
+
+        <h1>Subscription Graph</h1>
+        <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
       </div>
     );
   }

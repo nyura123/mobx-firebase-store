@@ -318,12 +318,83 @@ class MobxFirebaseStore {
     toJS() {
         return this.fbStore.toJS();
     }
-    
+
+    onSubscribed(sub) {
+        if (this.observableSubscriptionGraph) {
+            this.observableSubscriptionGraph.update();
+        }
+    }
+
     onUnsubscribed(subKey) {
         //Default implementation: remove data when it no longer has any subscribers
 
         if (!this.subscribedRegistry[subKey]) {
             this.fbStore.delete(subKey);
+        }
+
+        if (this.observableSubscriptionGraph) {
+            this.observableSubscriptionGraph.update();
+        }
+    }
+
+    attachObservableSubscriptionGraph(graph) {
+        this.observableSubscriptionGraph = graph;
+    }
+
+    //private
+    getSubscriptionGraph() {
+        const subKeys = {}
+        const nodes = [];
+        const edges = [];
+        const subscribedRegistry = this.subscribedRegistry;
+        Object.keys(subscribedRegistry || {}).forEach((subKey) => {
+            subKeys[subKey] = 1;
+            const subInfo = subscribedRegistry[subKey];
+            const node = {id: subKey, label: `${subKey} #subs=${subInfo.refCount}`};
+            nodes.push(node);
+        });
+        Object.keys(subscribedRegistry || {}).forEach((subKey) => {
+            const subInfo = subscribedRegistry[subKey];
+            Object.keys(subInfo.parentSubKeys || {}).forEach((parentSubKey) => {
+                if (subKeys[parentSubKey]) {
+                    edges.push({from: parentSubKey, to: subKey})
+                } else {
+                    subKeys[parentSubKey] = 1;
+                    const node = {id: parentSubKey, label: `${parentSubKey}`};
+                    nodes.push(node);
+                    edges.push({from: parentSubKey, to: subKey})
+                }
+            });
+        });
+
+        return {
+            nodes,
+            edges
+        }
+    }
+}
+
+export class ObservableSubscriptionGraph {
+    constructor(store) {
+        this.store = store;
+        store.attachObservableSubscriptionGraph(this);
+        this.obsGraph = observable({
+            nodes: [],
+            edges: []
+        });
+    }
+
+    //to be called by MobxFirebaseStore internally
+    update() {
+        const graph = this.store.getSubscriptionGraph();
+        this.obsGraph.nodes.replace(graph.nodes);
+        this.obsGraph.edges.replace(graph.edges);
+    }
+
+    get() {
+        return {
+            nodes: this.obsGraph.nodes.slice(),
+            edges: this.obsGraph.edges.slice()
         }
     }
 }

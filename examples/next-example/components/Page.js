@@ -1,10 +1,14 @@
-import React, { PropTypes } from 'react'
+import React from 'react'
+import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
 import Link from 'next/link'
 import { createAutoSubscriber } from 'firebase-nest'
 import RegisterOrLogin from './RegisterOrLogin'
 import AddMessage from './AddMessage'
 import { limitedMessagesSubs } from '../store'
+
+import Graph from 'react-graph-vis'
+import DevTools from 'mobx-react-devtools'
 
 function deferredUnsubscribe(unsubscribe) {
   //optimization to avoid flickering when paginating - keep current data for a bit while we wait for new query that includes older items
@@ -59,7 +63,9 @@ class MessageList extends React.Component {
   }
   
   render() {
-    const { store, isProtected } = this.props
+
+    const { title, store, isProtected } = this.props
+
     const { limitTo } = this.state
     let observableMessages = store.limitedMessages(limitTo)
 
@@ -74,29 +80,60 @@ class MessageList extends React.Component {
 
     const isLoggedIn = !!store.authUser()
 
+    const graphVisOptions = {
+      layout: {
+        hierarchical: true
+      },
+      edges: {
+        color: "#000000"
+      }
+    }
+
+    const graphVisEvents = {
+      select: function(event) {
+        const { nodes, edges } = event;
+      }
+    }
+
     return (
       <div>
-        <Link href={'/'}><a>Navigate to self - re-render on client</a></Link>
-        <br />
-        <Link href={'/other'}><a>Navigate to other</a></Link>
-        <br />
-        <h1><RegisterOrLogin authStore={store} /></h1>
-        <br />
-        <GetOlder getOlder={this.getOlder} />
-        {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
-        {isProtected && !isLoggedIn && <div>Will not subscribe to data if logged out - see getSubs</div>}
-        {fetching && !observableMessages && <div>Fetching</div>}
-        {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
-        {error && <div style={{color:'red'}}>{error}</div>}
-        
-        <Messages messages={messages} store={store} deleteMessage={this.deleteMessage} />
-        
-        <div style={{float:'left', clear:'both'}} ref={(ref) => { this.messagesEnd = ref }} />
+        <h1>{title}</h1>
 
-        <div style={{height:40}} />
+        <div style={{display:'inline-block',width:'70%'}}>
+          <Link href={'/'}><a>Navigate to self - re-render on client</a></Link>
+          <br />
+          <Link href={'/other'}><a>Navigate to other</a></Link>
+          <br />
+          <h1><RegisterOrLogin authStore={store} /></h1>
+          <br />
+          <GetOlder getOlder={this.getOlder} />
 
-        <AddMessage />
-        
+
+          {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
+          {isProtected && !isLoggedIn && <div>Will not subscribe to data if logged out - see getSubs</div>}
+          {fetching && !observableMessages && <div>Fetching</div>}
+          {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
+          {error && <div style={{color:'red'}}>{error}</div>}
+
+          <Messages messages={messages} store={store} deleteMessage={this.deleteMessage} />
+
+          <div style={{float:'left', clear:'both'}} ref={(ref) => { this.messagesEnd = ref }} />
+
+          <div style={{height:40}} />
+
+          <AddMessage />
+
+          <h1>Subscription Graph</h1>
+
+          <DevTools />
+        </div>
+
+        <div style={{display:'inline-block',width:'30%', textAlign: 'left', verticalAlign: 'top'}}>
+          <div style={{display:'inline-block'}}>
+            <Graph key={store.subscriptionGraph.version} graph={store.subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+          </div>
+        </div>
+
       </div>
     )
   }
