@@ -46,7 +46,7 @@ export default class Main extends React.Component {
           <title>Main Page</title>
         </Head>
         <Provider store={this.store}>
-          <Page title='index.js' limitTo={this.props.limitTo} />
+          <Page title='next-example/pages/index.js' limitTo={this.props.limitTo} />
         </Provider>
       </div>
     )

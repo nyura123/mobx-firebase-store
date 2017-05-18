@@ -85,7 +85,7 @@ Or with `asList`, define `transformChild: (val) => ...`.
 
 #### Supports nested subscriptions
 
-For each child, e.g. subscribe to user for each message:
+For example, for each message, subscribe to its author (message.uid).
 
 ```js
 //...
@@ -102,7 +102,11 @@ For each child, e.g. subscribe to user for each message:
 //...
 ```
 
-Or for specific fields:
+If we have `getSubs` defined as above and 2 messages by 2 users, `fred` and `barney`, the subscription graph can be pictured something like this:
+
+![subscription graph](https://cloud.githubusercontent.com/assets/7076175/26225280/029b905c-3bec-11e7-868d-4898277e6c1a.png)
+
+Also can nest subscriptions for specific fields - for example, parent subscription is for a blog, nested subscription is for its author.
 
 ```js
     getSubs: (props, state) => {
@@ -117,6 +121,8 @@ Or for specific fields:
     },
 ```
 
+See [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3) for examples of how to display the firebase subscription graph.
+  
 #### More examples
 
 [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3) - includes auth

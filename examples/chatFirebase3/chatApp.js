@@ -85,7 +85,7 @@ class MessageList extends Component {
   }
 
   renderMessage(messageKey, messageData) {
-    const user = messageData ? store.getData('usrrrrr_'+messageData.uid) : null;
+    const user = messageData ? store.getData('user_'+messageData.uid) : null;
     return (
       <div style={{border:'1px grey solid'}} key={messageKey}>
         <div>{messageData.text}</div>
@@ -130,7 +130,7 @@ class MessageList extends Component {
         }
 
         <h1>Subscription Graph</h1>
-        <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+        <Graph style={{width:'100%', height:400}} graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
       </div>
     );
   }
@@ -142,7 +142,7 @@ function getLoggedInSubs() {
     asList: true,
     resolveFirebaseRef: () => fbRef.child('samplechat/messages'), //query example: .orderByChild('uid').equalTo('barney'),
     childSubs: (messageKey, messageData) => !messageData.uid ? [] : [
-      {subKey: 'usrrrrr_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('samplechat/users').child(messageData.uid)}
+      {subKey: 'user_' + messageData.uid, asValue: true, resolveFirebaseRef: () => fbRef.child('samplechat/users').child(messageData.uid)}
     ],
     
     //Optional - get data callbacks after store data is already updated:

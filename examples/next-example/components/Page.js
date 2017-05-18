@@ -84,9 +84,12 @@ class MessageList extends React.Component {
       layout: {
         hierarchical: true
       },
-      edges: {
-        color: "#000000"
-      }
+      // interaction: {
+      //   dragNodes: true
+      // },
+      // edges: {
+      //   color: "#000000"
+      // }
     }
 
     const graphVisEvents = {
@@ -99,10 +102,10 @@ class MessageList extends React.Component {
       <div>
         <h1>{title}</h1>
 
-        <div style={{display:'inline-block',width:'70%'}}>
-          <Link href={'/'}><a>Navigate to self - re-render on client</a></Link>
+        <div style={{display:'inline-block',width:'29%'}}>
+          <Link href={'/'}><a>Link to pages/index.js</a></Link>
           <br />
-          <Link href={'/other'}><a>Navigate to other</a></Link>
+          <Link href={'/other'}><a>Link to pages/other.js</a></Link>
           <br />
           <h1><RegisterOrLogin authStore={store} /></h1>
           <br />
@@ -123,15 +126,14 @@ class MessageList extends React.Component {
 
           <AddMessage />
 
-          <h1>Subscription Graph</h1>
-
           <DevTools />
         </div>
 
-        <div style={{display:'inline-block',width:'30%', textAlign: 'left', verticalAlign: 'top'}}>
-          <div style={{display:'inline-block'}}>
-            <Graph key={store.subscriptionGraph.version} graph={store.subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
-          </div>
+        <div style={{display:'inline-block',width:'70%', textAlign: 'left', verticalAlign: 'top'}}>
+
+          <h1>Firebase Subscription Graph</h1>
+          <h2>Firebase subscriptions are updated automatically based on <b>getSubs</b> specified by the Component</h2>
+            <Graph style={{width:'100%', height:500}} key={store.subscriptionGraph.version} graph={store.subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
         </div>
 
       </div>

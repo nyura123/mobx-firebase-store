@@ -341,52 +341,78 @@ class MobxFirebaseStore {
         this.observableSubscriptionGraph = graph;
     }
 
-    //private
-    getSubscriptionGraph() {
-        const subKeys = {}
-        const nodes = [];
-        const edges = [];
-        const subscribedRegistry = this.subscribedRegistry;
-        Object.keys(subscribedRegistry || {}).forEach((subKey) => {
-            subKeys[subKey] = 1;
-            const subInfo = subscribedRegistry[subKey];
-            const node = {id: subKey, label: `${subKey} #subs=${subInfo.refCount}`};
-            nodes.push(node);
-        });
-        Object.keys(subscribedRegistry || {}).forEach((subKey) => {
-            const subInfo = subscribedRegistry[subKey];
-            Object.keys(subInfo.parentSubKeys || {}).forEach((parentSubKey) => {
-                if (subKeys[parentSubKey]) {
-                    edges.push({from: parentSubKey, to: subKey})
-                } else {
-                    subKeys[parentSubKey] = 1;
-                    const node = {id: parentSubKey, label: `${parentSubKey}`};
-                    nodes.push(node);
-                    edges.push({from: parentSubKey, to: subKey})
-                }
-            });
-        });
-
-        return {
-            nodes,
-            edges
-        }
+    getSubscribedRegistry() {
+        return this.subscribedRegistry;
     }
 }
 
+function getSubscriptionGraph(subscribedRegistry, makeNodeProps) {
+    const subKeys = {}
+    const nodes = [];
+    const edges = [];
+    Object.keys(subscribedRegistry || {}).forEach((subKey) => {
+        const subInfo = subscribedRegistry[subKey];
+        const node = Object.assign({}, makeNodeProps(subKey, subInfo), {id: subKey});
+        subKeys[subKey] = node;
+        nodes.push(node);
+    });
+    Object.keys(subscribedRegistry || {}).forEach((subKey) => {
+        const subInfo = subscribedRegistry[subKey];
+        const node = subKeys[subKey];
+        Object.keys(subInfo.parentSubKeys || {}).forEach((parentSubKey) => {
+            if (subKeys[parentSubKey]) {
+                edges.push({length: 5, from: parentSubKey, to: subKey})
+                if (!node.group) {
+                    node.group = parentSubKey;
+                }
+            } else {
+                //This should only happen for parentSubKey==_root which won't have its own subscribedRegistry[_rootKey] entry
+                // const node = {id: parentSubKey, label: `${parentSubKey}`};
+                // nodes.push(node);
+                // subKeys[parentSubKey] = node;
+                // edges.push({from: parentSubKey, to: subKey})
+            }
+        });
+    });
+
+    return {
+        nodes,
+        edges
+    }
+}
+
+//default way to make a graph node from subInfo
+//for properties you can output, see http://visjs.org/docs/network/nodes.html
+export function defaultMakeNodeProps(subKey, subInfo) {
+    const sub = subInfo.sub || {};
+    const firebasePath = sub.path || subInfo.ref.ref;
+    console.log(subInfo, subInfo.ref, subInfo.ref.ref, subInfo.ref.key)
+    let label = `${firebasePath} \n subKey: ${subKey} \n # subsribers: ${subInfo.refCount}`;
+    if (subInfo.childUnsubs) {
+        label += `\n # nested children subs: ${Object.keys(subInfo.childUnsubs).length}`;
+    }
+    if (subInfo.fieldUnsubs) {
+        label += `\n # nested field subs: ${Object.keys(subInfo.fieldUnsubs).length}`;
+    }
+    return {shape: 'box', borderWidth: 1, shadow: {enabled:true}, color: {background: '#D2E5FF', border:'grey'}, label};
+}
+
 export class ObservableSubscriptionGraph {
-    constructor(store) {
+    constructor(store, makeNodeProps) {
         this.store = store;
-        store.attachObservableSubscriptionGraph(this);
         this.obsGraph = observable({
             nodes: [],
             edges: []
         });
+
+        this.makeNodeProps = makeNodeProps || defaultMakeNodeProps;
+
+        store.attachObservableSubscriptionGraph(this);
     }
 
     //to be called by MobxFirebaseStore internally
     update() {
-        const graph = this.store.getSubscriptionGraph();
+        const graph = getSubscriptionGraph(this.store.getSubscribedRegistry(), this.makeNodeProps);
         this.obsGraph.nodes.replace(graph.nodes);
         this.obsGraph.edges.replace(graph.edges);
     }

@@ -63,7 +63,7 @@ export default class Other extends React.Component {
           <title>Other Page</title>
         </Head>
         <Provider store={this.store}>
-          <Page title='other.js' isProtected={true} limitTo={this.props.limitTo} />
+          <Page title='next-example/pages/index.js' isProtected={true} limitTo={this.props.limitTo} />
         </Provider>
       </div>
     )
