@@ -9,7 +9,7 @@
     "firebase": "^2.4.2",
     "firebase-nest": "^0.1.0",
     "mobx": "^2.2.1",
-    "mobx-firebase-store": "^0.1.14",
+    "mobx-firebase-store": "^1.1.0",
     "mobx-react": "^3.3.0",
     "react": "^0.14.8",
     "react-dom": "^15.0.2"
