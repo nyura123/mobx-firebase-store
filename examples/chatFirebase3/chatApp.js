@@ -8,6 +8,8 @@ import firebase from 'firebase';
 // import {extras} from 'mobx';
 import Graph from 'react-graph-vis';
 
+import Cal from './Cal';
+
 //
 // class MobxGraphMaker {
 //   constructor(mobxNode) {
@@ -130,6 +132,7 @@ class MessageList extends Component {
         }
 
         <h1>Subscription Graph</h1>
+        
         <Graph style={{width:'100%', height:400}} graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
       </div>
     );

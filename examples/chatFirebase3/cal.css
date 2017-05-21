@@ -1,0 +1,99 @@
+
+.my-calendar-container {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+}
+
+.event-grid {
+    display:grid;
+    grid-auto-columns: minmax(100px, auto);
+    border:1px solid blue;
+    grid-auto-rows: 20px;
+}
+
+.event {
+    border:1px solid darkgreen;
+}
+
+.hour-label {
+    height:20px;
+    display:flex;
+    align-items:center;
+    border:1px solid red;
+    box-sizing:border-box;
+    background-color:rgba(0,0,255,.4);
+}
+
+.start1 {
+    grid-row-start: 1;
+}
+.start2 {
+    grid-row-start: 2;
+}
+.start3 {
+    grid-row-start: 3;
+}
+.start4 {
+    grid-row-start: 4;
+}
+.start5 {
+    grid-row-start: 5;
+}
+.start6 {
+    grid-row-start: 6;
+}
+.start7 {
+    grid-row-start: 7;
+}
+.start8 {
+    grid-row-start: 8;
+}
+.start9 {
+    grid-row-start: 9;
+}
+.start10 {
+    grid-row-start: 10;
+}
+.start11 {
+    grid-row-start: 11;
+}
+.start12 {
+    grid-row-start: 12;
+}
+
+.end1 {
+    grid-row-end: 1;
+}
+.end2 {
+    grid-row-end: 2;
+}
+.end3 {
+    grid-row-end: 3;
+}
+.end4 {
+    grid-row-end: 4;
+}
+.end5 {
+    grid-row-end: 5;
+}
+.end6 {
+    grid-row-end: 6;
+}
+.end7 {
+    grid-row-end: 7;
+}
+.end8 {
+    grid-row-end: 8;
+}
+.end9 {
+    grid-row-end: 9;
+}
+.end10 {
+    grid-row-end: 10;
+}
+.end11 {
+    grid-row-end: 11;
+}
+.end12 {
+    grid-row-end: 12;
+}
