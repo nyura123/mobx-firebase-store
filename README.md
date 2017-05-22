@@ -2,6 +2,8 @@
 
 `MobxFirebaseStore` allows you to subscribe to firebase data via `firebase-nest` subscriptions and have the data flow into `mobx` observable maps.
 
+See live: [storybook](https://nyura123.github.io/mobx-firebase-store)
+
 #### React Component Example
 
 ```js
@@ -129,13 +131,13 @@ See [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/
   
 #### More examples
 
-[chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3) - includes auth
+[chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples-storybook-firebase3/chatFirebase3) - includes auth
 
 [next.js example](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/next-example) - server-side rendering with firebase-admin, firebase and mobx, *and auth*
 
 [react-native-gifted-chat example](https://github.com/nyura123/gifted-chat-firebase-mobx/tree/master)
 
-[firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination)
+[firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples-storybook-firebase3/pagination)
 
 
 #### Required libs
@@ -144,6 +146,7 @@ See [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/
 
 
 # Run examples in storybook
+
 
 Inspired by react-native-web-starter examples.
 

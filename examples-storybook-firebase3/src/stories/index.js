@@ -13,10 +13,10 @@ const config = {
 };
 firebase.initializeApp(config);
 
-storiesOf('Dinosaurs', module)
-    .add('', () => {
-      return <DinosaurApp />
-    });
+// storiesOf('Dinosaurs', module)
+//     .add('', () => {
+//       return <DinosaurApp />
+//     });
 
 
 storiesOf('Chat', module)

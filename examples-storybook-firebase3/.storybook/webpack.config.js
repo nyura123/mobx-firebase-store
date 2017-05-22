@@ -6,28 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _path = require('path');
 
-var _path2 = _interopRequireDefault(_path);
-
-var _webpack = require('webpack');
-
-var _webpack2 = _interopRequireDefault(_webpack);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var managerEntry = process.env.DEV_BUILD ? _path2.default.resolve(__dirname, '../../src/client/manager') : _path2.default.resolve(__dirname, '../manager');
+//This config needed to be able to import components from outside of examples-storybook-firebase3/src
 
 var config = {
-    devtool: '#cheap-module-eval-source-map',
-    entry: {
-        manager: [managerEntry],
-        preview: [_path2.default.resolve(__dirname, './error_enhancements'), 'webpack-hot-middleware/client']
-    },
-    output: {
-        path: _path2.default.join(__dirname, 'dist'),
-        filename: '[name].bundle.js',
-        publicPath: '/static/'
-    },
-    plugins: [new _webpack2.default.optimize.OccurenceOrderPlugin(), new _webpack2.default.HotModuleReplacementPlugin()],
     module: {
         loaders: [{
             loader: 'babel',

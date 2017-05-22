@@ -50,7 +50,6 @@ class MessageList extends Component {
 
         <div style={{width:'30%',display:'inline-block'}}>
           <h1><RegisterOrLogin authStore={authStore} /></h1>
-          {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
           {fetching && <div>Fetching</div>}
           {fetchError && <div>{fetchError}</div>}
           {!!messages && <div>
@@ -61,7 +60,7 @@ class MessageList extends Component {
         </div>
 
         <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
-          <h1>Subscription Graph</h1>
+          <h1>Subscription Graph:</h1>
           <SubscriptionGraph graph={subscriptionGraph.get()} />
         </div>
       </div>

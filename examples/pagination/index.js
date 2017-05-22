@@ -134,7 +134,6 @@ class LimitToExample extends Component {
       <div>
 
         <div style={{width:'30%',display:'inline-block'}}>
-          {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
           {writeError && <div style={{color:'red'}}>Error writing to firebase: {JSON.stringify(writeError)}</div>}
           {fetchError && <div style={{color:'red'}}>Error fetching data: {JSON.stringify(fetchError)}</div>}
           <div style={{height: 30}}>{fetching ? 'Loading...' : ''}</div>

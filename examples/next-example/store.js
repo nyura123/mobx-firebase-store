@@ -68,7 +68,7 @@ class Store {
 
 
     //unsubscribeDelayMs is an optimization for pagination:
-    // - delay unsubscribing from current page so that newer page's data is received before we unsubscribe current page data and delete its data from the store.
+    // - delay unsubscribing from current page so that newer page's data has a chance to come in before we unsubscribe current & delete its data from the store.
     // Prevents empty data flickering.
     this.mbStore = new MobxFirebaseStore(ref, {unsubscribeDelayMs: 1000})
 
