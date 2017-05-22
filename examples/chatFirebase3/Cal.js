@@ -2,7 +2,6 @@
 import React, { Component, PropTypes } from 'react';
 
 import css from './cal.css';
-console.log('css=',css)
 
 const styles = {
   eventGrid: {

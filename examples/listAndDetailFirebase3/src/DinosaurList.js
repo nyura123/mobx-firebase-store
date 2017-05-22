@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 
 import {observer} from 'mobx-react';
 import {autoSubscriber} from 'firebase-nest';
-import Graph from 'react-graph-vis';
+import SubscriptionGraph from '../../subscriptionGraph/subscriptionGraph';
 
 import DinosaurDetail from './DinosaurDetail';
 
@@ -23,21 +23,14 @@ class DinosaurList extends Component {
     subscribeSubs(subs, props, state) {
         const {stores} = props;
         const {store} = stores;
-        const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
-        this.setState({fetching: true, fetchError: null}, () => {
-            promise.then(
-                () => this.setState({fetching: false}),
-                (error) => this.setState({fetching: false, fetchError: error})
-            );
-        });
-        return unsubscribe;
+      
+        //Returning subscribeSubsWithPromise allows autoSubscriber to track loading status and firebase fetch errors
+        return store.subscribeSubsWithPromise(subs);
     }
 
     constructor(props) {
         super(props);
         this.state = {
-            fetching: false,
-            fetchError: null,
             detailDinosaurKey: null
         }
     }
@@ -68,7 +61,7 @@ class DinosaurList extends Component {
 
         const authUser = authStore.authUser();
 
-        const { fetching, fetchError } = this.state;
+        const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError } = this.state;
 
         if (fetchError) {
             return <div style={{backgroundColor:"red"}}>{fetchError}</div>
@@ -78,39 +71,29 @@ class DinosaurList extends Component {
 
         const {detailDinosaurKey} = this.state;
 
-      const graphVisOptions = {
-        layout: {
-          hierarchical: true
-        },
-        edges: {
-          color: "#000000"
-        }
-      };
-      const graphVisEvents = {
-        select: function(event) {
-          const { nodes, edges } = event;
-        }
-      }
-
         return (
             <div>
+              <div style={{width:'30%',display:'inline-block'}}>
                 <RegisterOrLogin stores={stores} />
                 {!authUser && <div>Register or log in to display dinosaurs</div>}
                 {fetching && <div>Fetching</div>}
                 {dinosaurs &&
                 <div>
-                    <div>Dinosaurs ({dinosaurs.size})</div>
-                    <ul>
-                        {dinosaurs.entries().map(entry => this.renderRow(entry[0], entry[1]))}
-                    </ul>
+                  <div>Dinosaurs ({dinosaurs.size})</div>
+                  <ul>
+                    {dinosaurs.entries().map(entry => this.renderRow(entry[0], entry[1]))}
+                  </ul>
                 </div>
                 }
                 {detailDinosaurKey &&
                 <DinosaurDetail stores={stores} dinosaurKey={detailDinosaurKey}/>
                 }
+              </div>
 
-              <h1>Subscription Graph</h1>
-              <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+              <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
+                <h1>Subscription Graph</h1>
+                <SubscriptionGraph graph={subscriptionGraph.get()} />
+              </div>
 
             </div>
         );

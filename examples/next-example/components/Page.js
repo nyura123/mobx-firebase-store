@@ -10,10 +10,6 @@ import { limitedMessagesSubs } from '../store'
 import Graph from 'react-graph-vis'
 import DevTools from 'mobx-react-devtools'
 
-function deferredUnsubscribe(unsubscribe) {
-  //optimization to avoid flickering when paginating - keep current data for a bit while we wait for new query that includes older items
-  return () => setTimeout(() => unsubscribe(), 1000);
-}
 
   /* Real-time messages */
 @observer
@@ -24,37 +20,8 @@ class MessageList extends React.Component {
   }
 
   state = {
-    fetching: false,
-    fetchError: null,
     limitTo: this.props.limitTo || 1,
     prevLimitTo: null
-  }
-
-  //used by createAutoSubscriber HOC
-  subscribeSubs(subs, props, state) {
-    //More advanced version of subscribeSubs with loading indicator and error handling.
-
-    const { store } = this.props
-
-    const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs)
-
-    this.setState({
-      fetching: true,
-      fetchError: null
-    }, () => {
-      promise.then(() => {
-        this.setState({
-          fetching: false
-        })
-      }, (error) => {
-        this.setState({
-          fetching: false,
-          fetchError: error
-        })
-      })
-    })
-
-    return deferredUnsubscribe(unsubscribe)
   }
 
   componentDidUpdate() {
@@ -76,7 +43,7 @@ class MessageList extends React.Component {
 
     const messages = observableMessages ? observableMessages.entries() : null
 
-    const { fetching, fetchError, error } = this.state
+    const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError, error } = this.state
 
     const isLoggedIn = !!store.authUser()
 
@@ -114,7 +81,7 @@ class MessageList extends React.Component {
 
           {isProtected && <h3 style={{textAlign:'center'}}>Protected Route</h3>}
           {isProtected && !isLoggedIn && <div>Will not subscribe to data if logged out - see getSubs</div>}
-          {fetching && !observableMessages && <div>Fetching</div>}
+          <div style={{visibility:fetching?'visible':'hidden'}}>Fetching</div>
           {fetchError && <div style={{color:'red'}}>{fetchError}</div>}
           {error && <div style={{color:'red'}}>{error}</div>}
 
@@ -196,5 +163,7 @@ const GetOlder = ({getOlder}) => {
 
 export default inject('store')(createAutoSubscriber({
   getSubs: (props, state) => props.isProtected && !props.store.authUser() ? [] : limitedMessagesSubs(state.limitTo, props.store.fbRef()),
-  //subscribeSubs is defined on the component, can also be passed here
+
+  //Returning subscribeSubsWithPromise allows autoSubscriber to track loading status and firebase fetch errors
+  subscribeSubs: (subs, props) => props.store.subscribeSubsWithPromise(subs)
 })(MessageList))

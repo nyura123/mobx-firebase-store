@@ -33,6 +33,9 @@ class MessageList extends Component {
     render() {
         const messages = store.getData('myMsgs'); //'myMsgs' matches the subKey below
         
+        //autoSubscriber keeps track of loading and error status when using store.subscribeSubsWithPromise
+        const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError, error } = this.state
+        
         //store.getData returns mobx observable map - use keys(), get(), entries(), etc. to render the data
         //do NOT use set() or other mutations on the map -- updates should be written directly to firebase, and will get reflected in the observable map automatically.
         
@@ -59,7 +62,8 @@ export default createAutoSubscriber({
         onData: (type, snapshot) => console.log('got data: ', type, 'myMsgs', snapshot.val())
         
     }], //can add more than one subscription to this array
-    subscribeSubs: (subs, props, state) => store.subscribeSubs(subs)
+    
+    subscribeSubs: (subs, props, state) => store.subscribeSubsWithPromise(subs)
 })(observer(MessageList));
 ```
 
@@ -74,7 +78,7 @@ export default createAutoSubscriber({
         asValue: true, //have to use asValue if using orderBy* and want to preserve the ordering in the observable map
         resolveFirebaseRef: () => fbRef.child('samplechat/messages').orderByChild('sentTimestamp')
     }],
-    subscribeSubs: (subs, props, state) => store.subscribeSubs(subs)
+    subscribeSubs: (subs, props, state) => store.subscribeSubsWithPromise(subs)
 })(observer(MessageList));
 ```
 

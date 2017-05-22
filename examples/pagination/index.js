@@ -5,7 +5,7 @@ import {observer} from 'mobx-react';
 import {createAutoSubscriber} from 'firebase-nest';
 import firebase from 'firebase';
 
-import Graph from 'react-graph-vis';
+import SubscriptionGraph from '../subscriptionGraph/subscriptionGraph';
 
 const apiKey = 'yourApiKey';
 
@@ -17,7 +17,12 @@ const fbApp = firebase.initializeApp({
 }, "play");
 
 const fbRef = firebase.database(fbApp).ref();
-const store = new MobxFirebaseStore(fbRef);
+
+//set unsubscribeDelayMs as an optimization to avoid flickering when getting pages of data
+// - delay unsubscribing from current page so that newer page's data is received before we unsubscribe current page data and delete its data from the store.
+// Prevents empty data flickering.
+const store = new MobxFirebaseStore(fbRef, {unsubscribeDelayMs: 1000});
+
 const subscriptionGraph = new ObservableSubscriptionGraph(store);
 
 /* Playground, showcases getMore and data entry */
@@ -38,10 +43,6 @@ function deleteAll() {
 const limitTo = 3;
 const moreItemsIncrement = 2;
 
-function deferredUnsubscribe(unsubscribe) {
-  //optimization to avoid flickering - keep current data for a bit while we wait for new query that includes older items
-  return () => setTimeout(() => unsubscribe(), 1000);
-}
 
 class LimitToExample extends Component {
   constructor(props) {
@@ -55,34 +56,8 @@ class LimitToExample extends Component {
     this.state = {
       pagination: {limitTo},
       prevPagination: null,
-      writeError: null,
-      fetchError: null,
-      fetching: false
+      writeError: null
     }
-  }
-
-  subscribeSubs(subs) {
-    //More advanced version of subscribeSubs with loading indicator and error handling.
-
-    const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
-
-    this.setState({
-      fetching: true,
-      fetchError: null
-    }, () => {
-      promise.then(() => {
-        this.setState({
-          fetching: false
-        });
-      }, (error) => {
-        this.setState({
-          fetching: false,
-          fetchError: error
-        })
-      });
-    });
-
-    return deferredUnsubscribe(unsubscribe);
   }
 
   renderItem(key, item) {
@@ -153,44 +128,36 @@ class LimitToExample extends Component {
 
     const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
 
-    const {writeError, fetchError, value, fetching, pagination: {limitTo}} = this.state;
-
-    const graphVisOptions = {
-      layout: {
-        hierarchical: true
-      },
-      edges: {
-        color: "#000000"
-      }
-    };
-    const graphVisEvents = {
-      select: function(event) {
-        const { nodes, edges } = event;
-      }
-    }
+    const {writeError, _autoSubscriberError: fetchError, value, _autoSubscriberFetching: fetching, pagination: {limitTo}} = this.state;
 
     return (
       <div>
-        {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
-        {writeError && <div style={{color:'red'}}>Error writing to firebase: {JSON.stringify(writeError)}</div>}
-        {fetchError && <div style={{color:'red'}}>Error fetching data: {JSON.stringify(fetchError)}</div>}
-        <div style={{height: 30}}>{fetching ? 'Loading...' : ''}</div>
-        <button onClick={this.addItem}>Add Item</button>
-        <input type='number' placeholder='enter sortKey for new item' value={value || ''} onChange={({target:{value}}) => this.setState({value})} />
-        {' '}
-        <button onClick={this.deleteLastItem}>Delete Last Item</button>
-        <button onClick={this.deleteAll}>Delete All</button>
-        <br />
-        <button onClick={() => this.getOlder()}>Get older</button>
 
-        {!!items && <div>
-          Querying for {limitTo} latest items, {items.length} items found:
-          {items.map((entry) => this.renderItem(entry[0], entry[1]))}
+        <div style={{width:'30%',display:'inline-block'}}>
+          {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
+          {writeError && <div style={{color:'red'}}>Error writing to firebase: {JSON.stringify(writeError)}</div>}
+          {fetchError && <div style={{color:'red'}}>Error fetching data: {JSON.stringify(fetchError)}</div>}
+          <div style={{height: 30}}>{fetching ? 'Loading...' : ''}</div>
+          <button onClick={this.addItem}>Add Item</button>
+          <input type='number' placeholder='enter sortKey for new item' value={value || ''} onChange={({target:{value}}) => this.setState({value})} />
+          {' '}
+          <button onClick={this.deleteLastItem}>Delete Last Item</button>
+          <button onClick={this.deleteAll}>Delete All</button>
+          <br />
+          <button onClick={() => this.getOlder()}>Get older</button>
+
+          {!!items && <div>
+            Querying for {limitTo} latest items, {items.length} items found:
+            {items.map((entry) => this.renderItem(entry[0], entry[1]))}
+          </div>
+          }
         </div>
-        }
 
-        <h1>Subscription Graph</h1>
-        <Graph graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+        <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
+          <h1>Subscription Graph</h1>
+          <SubscriptionGraph graph={subscriptionGraph.get()} />
+        </div>
+
       </div>
     );
   }
@@ -207,4 +174,9 @@ function getSubs(props, state) {
 }
 
 //Subscribe to and observe firebase data
-export default createAutoSubscriber({getSubs})(observer(LimitToExample));
+export default createAutoSubscriber({
+  getSubs,
+
+  //Returning subscribeSubsWithPromise allows autoSubscriber to track loading status and firebase fetch errors
+  subscribeSubs: (subs) => store.subscribeSubsWithPromise(subs)
+})(observer(LimitToExample));

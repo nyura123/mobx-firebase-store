@@ -260,9 +260,11 @@ class MobxFirebaseStore {
             = createFirebaseSubscriber(this, this.fb, config);
         this.queue = queue;
         this.rawSubscribeSubs = subscribeSubs;
+        this.rawSubscribeSubsWithPromise = subscribeSubsWithPromise;
+        this.subscribeSubs = this.subscribeSubs.bind(this);
+        this.subscribeSubsWithPromise = this.subscribeSubsWithPromise.bind(this);
         this.subscribedRegistry = subscribedRegistry;
         this.unsubscribeAll = unsubscribeAll;
-        this.rawSubscribeSubsWithPromie = subscribeSubsWithPromise;
     }
 
     subscribeSubs(subs) {
@@ -270,7 +272,7 @@ class MobxFirebaseStore {
     }
 
     subscribeSubsWithPromise(subs) {
-        const {unsubscribe, promise } = this.rawSubscribeSubsWithPromie(subs);
+        const {unsubscribe, promise } = this.rawSubscribeSubsWithPromise(subs);
 
         //Put resolve/reject on the queue to make sure it is seen after queued-up onData callbacks
         const queuedResolvePromise = new Promise((resolve, reject) => {

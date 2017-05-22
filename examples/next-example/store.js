@@ -66,7 +66,11 @@ class Store {
       this.decodedToken = decodedToken
     }
 
-    this.mbStore = new MobxFirebaseStore(ref)
+
+    //unsubscribeDelayMs is an optimization for pagination:
+    // - delay unsubscribing from current page so that newer page's data is received before we unsubscribe current page data and delete its data from the store.
+    // Prevents empty data flickering.
+    this.mbStore = new MobxFirebaseStore(ref, {unsubscribeDelayMs: 1000})
 
     //dev tools to see live subscription graph
     this.subscriptionGraph = new ObservableSubscriptionGraph(this.mbStore)

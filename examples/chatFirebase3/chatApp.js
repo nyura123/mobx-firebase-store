@@ -4,41 +4,12 @@ import MobxFirebaseStore, { ObservableSubscriptionGraph } from 'mobx-firebase-st
 import {observer} from 'mobx-react';
 import {createAutoSubscriber} from 'firebase-nest';
 import firebase from 'firebase';
-
-// import {extras} from 'mobx';
-import Graph from 'react-graph-vis';
-
-import Cal from './Cal';
-
-//
-// class MobxGraphMaker {
-//   constructor(mobxNode) {
-//    this.nextNodeId = 1;
-//     this.allNodes = [];
-//     this.allEdges = []
-//     this.build(mobxNode);
-//   }
-//
-//   getGraph() {
-//     return {
-//       nodes: this.allNodes,
-//       edges: this.allEdges
-//     }
-//   }
-//
-//   //private
-//   build(mobxNode, parentGraphNode = null) {
-//     const graphNode = {id: this.nextNodeId++, label: mobxNode.name};
-//     this.allNodes.push(graphNode);
-//     parentGraphNode && this.allEdges.push({from: graphNode.id, to: parentGraphNode.id});
-//     (mobxNode.dependencies || []).forEach((mobxDep) => this.build(mobxDep, graphNode));
-//   }
-// }
+import SubscriptionGraph from '../subscriptionGraph/subscriptionGraph';
 
 import RegisterOrLogin from './RegisterOrLogin';
 import AuthStore from './AuthStore';
 
-const apiKey = 'yourApiKey';
+const apiKey = 'yourApiKey'
 
 const fbApp = firebase.initializeApp({
   apiKey,
@@ -54,37 +25,6 @@ const authStore = new AuthStore(fbApp);
 
 /* Real-time messages */
 class MessageList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      fetching: false,
-      fetchError: null
-    }
-  }
-
-  subscribeSubs(subs, props, state) {
-    //More advanced version of subscribeSubs with loading indicator and error handling.
-
-    const {unsubscribe, promise} = store.subscribeSubsWithPromise(subs);
-
-    this.setState({
-      fetching: true,
-      fetchError: null
-    }, () => {
-      promise.then(() => {
-        this.setState({
-          fetching: false
-        });
-      }, (error) => {
-        this.setState({
-          fetching: false,
-          fetchError: error
-        })
-      });
-    });
-
-    return unsubscribe;
-  }
 
   renderMessage(messageKey, messageData) {
     const user = messageData ? store.getData('user_'+messageData.uid) : null;
@@ -101,39 +41,29 @@ class MessageList extends Component {
   render() {
     const messages = store.getData('myMsgs');
     const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
-    const { fetching, fetchError } = this.state;
 
-    //const graph = new MobxGraphMaker(extras.getDependencyTree(this.render.$mobx)).getGraph();
-
-    const graphVisOptions = {
-      layout: {
-        hierarchical: true
-      },
-      edges: {
-        color: "#000000"
-      }
-    };
-    const graphVisEvents = {
-      select: function(event) {
-        const { nodes, edges } = event;
-      }
-    }
+    //autoSubscriber provides fetching and error state
+    const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError } = this.state;
 
     return (
       <div>
-        <h1><RegisterOrLogin authStore={authStore} /></h1>
-        {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
-        {fetching && <div>Fetching</div>}
-        {fetchError && <div>{fetchError}</div>}
-        {!!messages && <div>
-          Messages:
-          {messages.keys().map(messageKey => this.renderMessage(messageKey, messages.get(messageKey)))}
-        </div>
-        }
 
-        <h1>Subscription Graph</h1>
-        
-        <Graph style={{width:'100%', height:400}} graph={subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+        <div style={{width:'30%',display:'inline-block'}}>
+          <h1><RegisterOrLogin authStore={authStore} /></h1>
+          {apiKeyNeedsUpdating && <h1 style={{color:'red'}}>Replace apiKey in examples/chatFirebase3/chatApp.js with your key</h1>}
+          {fetching && <div>Fetching</div>}
+          {fetchError && <div>{fetchError}</div>}
+          {!!messages && <div>
+            Messages:
+            {messages.keys().map(messageKey => this.renderMessage(messageKey, messages.get(messageKey)))}
+          </div>
+          }
+        </div>
+
+        <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
+          <h1>Subscription Graph</h1>
+          <SubscriptionGraph graph={subscriptionGraph.get()} />
+        </div>
       </div>
     );
   }
@@ -166,6 +96,7 @@ export default createAutoSubscriber({
     //can make getSubs auth-dependent:
     //getSubs: (props, state) => authStore.isLoggedIn() ? getLoggedInSubs() : getLoggedOutSubs(),
 
-    //Using more advanced subscribeSubs option in MessageList
-    //subscribeSubs: (subs) => store.subscribeSubs(subs)
+    //Returning subscribeSubsWithPromise allows autoSubscriber to track loading status and firebase fetch errors
+    subscribeSubs: (subs) => store.subscribeSubsWithPromise(subs)
 })(observer(MessageList));
+
