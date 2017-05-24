@@ -40,13 +40,19 @@ class MessageList extends Component {
   
   render() {
     const messages = store.getData('myMsgs');
-    const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
-
+    
     //autoSubscriber provides fetching and error state
     const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError } = this.state;
 
     return (
       <div>
+
+        <h3>Code for this example:{' '}
+          <a href='https://github.com/nyura123/mobx-firebase-store/tree/master/examples/chatFirebase3'
+             target='_blank' >
+            Chat
+          </a>
+        </h3>
 
         <div style={{width:'30%',display:'inline-block'}}>
           <h1><RegisterOrLogin authStore={authStore} /></h1>
@@ -60,7 +66,7 @@ class MessageList extends Component {
         </div>
 
         <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
-          <h1>Subscription Graph:</h1>
+          <h1 style={{textAlign:'center'}}>Subscription Graph:</h1>
           <SubscriptionGraph graph={subscriptionGraph.get()} />
         </div>
       </div>

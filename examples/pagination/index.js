@@ -27,17 +27,22 @@ const subscriptionGraph = new ObservableSubscriptionGraph(store);
 
 /* Playground, showcases getMore and data entry */
 
-function addItem(sortKey) {
-  sortKey = sortKey || 0;
-  return fbRef.child('limitToPlayground').push({text: 'new item', sortKey});
+function addItem({text, uid}) {
+  const msgKey = fbRef.child('playground').child('messages').push().key;
+  const updates = {
+    [`messages/${msgKey}`]: {text, uid, timestamp: new Date().getTime()},
+    [`users/${uid}`]: uid
+  }
+  console.log('updating...',updates)
+  return fbRef.child('playground').update(updates);
 }
 
 function deleteItem(key) {
-  return fbRef.child('limitToPlayground').child(key).remove();
+  return fbRef.child('playground').child('messages').child(key).remove();
 }
 
 function deleteAll() {
-  return fbRef.child('limitToPlayground').remove();
+  return fbRef.child('playground').child('messages').remove();
 }
 
 const limitTo = 3;
@@ -56,7 +61,8 @@ class LimitToExample extends Component {
     this.state = {
       pagination: {limitTo},
       prevPagination: null,
-      writeError: null
+      writeError: null,
+      uid: 'frank'
     }
   }
 
@@ -69,11 +75,11 @@ class LimitToExample extends Component {
   }
 
   addItem() {
-    const { value } = this.state;
+    const { text, uid } = this.state;
     this.setState({
       writeError: null
     }, () => {
-      addItem(parseInt(value))
+      addItem({text, uid})
         .then(() => this.setState({value: ''}))
         .catch((error) => this.setState({writeError: error.code}))
     });
@@ -111,13 +117,13 @@ class LimitToExample extends Component {
 
   getItems() {
     const { pagination: {limitTo} = {} } = this.state;
-    const subKey = `myData_${limitTo}`;
+    const subKey = `messages_${limitTo}`;
 
     let items = store.getData(subKey);
 
     if (!items && this.state.prevPagination) {
       //optimization to avoid flickering - try to get previous pagination while we're loading older items
-      items = store.getData(`myData_${this.state.prevPagination.limitTo}`)
+      items = store.getData(`messages_${this.state.prevPagination.limitTo}`)
     }
 
     return items ? items.entries() : [];
@@ -126,34 +132,62 @@ class LimitToExample extends Component {
   render() {
     const items = this.getItems();
 
-    const apiKeyNeedsUpdating = apiKey == 'yourApiKey';
-
-    const {writeError, _autoSubscriberError: fetchError, value, _autoSubscriberFetching: fetching, pagination: {limitTo}} = this.state;
+    const {
+      writeError,
+      _autoSubscriberError: fetchError,
+      _autoSubscriberFetching: fetching,
+      pagination: {limitTo},
+      text,
+      uid
+    } = this.state;
 
     return (
       <div>
 
+        <h3>Code for this example:{' '}
+          <a href='https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination'
+             target='_blank' >
+            Pagination
+          </a>
+
+        </h3>
         <div style={{width:'30%',display:'inline-block'}}>
           {writeError && <div style={{color:'red'}}>Error writing to firebase: {JSON.stringify(writeError)}</div>}
           {fetchError && <div style={{color:'red'}}>Error fetching data: {JSON.stringify(fetchError)}</div>}
           <div style={{height: 30}}>{fetching ? 'Loading...' : ''}</div>
-          <button onClick={this.addItem}>Add Item</button>
-          <input type='number' placeholder='enter sortKey for new item' value={value || ''} onChange={({target:{value}}) => this.setState({value})} />
-          {' '}
-          <button onClick={this.deleteLastItem}>Delete Last Item</button>
-          <button onClick={this.deleteAll}>Delete All</button>
-          <br />
-          <button onClick={() => this.getOlder()}>Get older</button>
 
-          {!!items && <div>
+          <section style={{marginTop:20}}>
+            <input style={{fontSize:'20px'}}
+                   placeholder='Message Text'
+                   value={text || ''}
+                   onChange={({target:{value}}) => this.setState({text: value})}
+            />
+            <input style={{fontSize:'20px'}}
+                   placeholder='enter user key (must be a valid firebase key)'
+                   value={uid || ''}
+                   onChange={({target:{value}}) => this.setState({uid: value})}
+            />
+
+            <br />
+            <button onClick={this.addItem}>Send Message</button>
+          </section>
+
+          <section style={{marginTop:20}}>
+          <button onClick={this.deleteLastItem}>Delete Last Message</button>
+          <button onClick={this.deleteAll}>Delete All Messages</button>
+            </section>
+          <br />
+          <button onClick={() => this.getOlder()}>Get More Messages</button>
+
+          <section style={{marginTop:20}}>
             Querying for {limitTo} latest items, {items.length} items found:
-            {items.map((entry) => this.renderItem(entry[0], entry[1]))}
-          </div>
-          }
+            {items && items.map((entry) => this.renderItem(entry[0], entry[1]))}
+          </section>
+
         </div>
 
         <div style={{width:'68%',display:'inline-block',verticalAlign:'top'}}>
-          <h1>Subscription Graph</h1>
+          <h1 style={{textAlign:'center'}}>Subscription Graph</h1>
           <SubscriptionGraph graph={subscriptionGraph.get()} />
         </div>
 
@@ -166,9 +200,14 @@ class LimitToExample extends Component {
 function getSubs(props, state) {
   const { pagination: {limitTo} = {}} = state;
   return [{
-    subKey: `myData_${limitTo}`,//make key dependent on pagination to trigger resubscription,
+    subKey: `messages_${limitTo}`,//make key dependent on pagination to trigger resubscription,
     asValue: true, //if using orderBy*, have to get data as value instead of list
-    resolveFirebaseRef: () => fbRef.child('limitToPlayground').orderByChild('sortKey').limitToLast(limitTo)
+    resolveFirebaseRef: () => fbRef.child('playground').child('messages').orderByChild('timestamp').limitToLast(limitTo),
+    childSubs: (messageKey, val) => [{
+      subKey: 'user_'+(val.uid||'unknown'),
+      asValue: true,
+      resolveFirebaseRef: () => fbRef.child('playground').child('users').child(val.uid||'unknown')
+    }]
   }];
 }
 
