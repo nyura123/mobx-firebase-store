@@ -80,7 +80,7 @@ class LimitToExample extends Component {
       writeError: null
     }, () => {
       addItem({text, uid})
-        .then(() => this.setState({value: ''}))
+        .then(() => this.setState({text: ''}))
         .catch((error) => this.setState({writeError: error.code}))
     });
   }
