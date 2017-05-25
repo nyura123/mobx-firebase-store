@@ -141,6 +141,8 @@ class LimitToExample extends Component {
       uid
     } = this.state;
 
+    const noMoreMessages = !fetching && items.length < limitTo;
+
     return (
       <div>
 
@@ -178,6 +180,7 @@ class LimitToExample extends Component {
             </section>
           <br />
           <button onClick={() => this.getOlder()}>Get More Messages</button>
+          {noMoreMessages && <div>No More Messages</div>}
 
           <section style={{marginTop:20}}>
             Querying for {limitTo} latest items, {items.length} items found:
