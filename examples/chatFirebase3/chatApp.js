@@ -40,7 +40,7 @@ class MessageList extends Component {
   
   render() {
     const messages = store.getData('myMsgs');
-    
+
     //autoSubscriber provides fetching and error state
     const { _autoSubscriberFetching: fetching, _autoSubscriberError: fetchError } = this.state;
 
@@ -104,4 +104,3 @@ export default createAutoSubscriber({
     //Returning subscribeSubsWithPromise allows autoSubscriber to track loading status and firebase fetch errors
     subscribeSubs: (subs) => store.subscribeSubsWithPromise(subs)
 })(observer(MessageList));
-

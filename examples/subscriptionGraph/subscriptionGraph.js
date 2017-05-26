@@ -2,7 +2,7 @@ import React from 'react';
 
 import Graph from 'react-graph-vis';
 
-export default ({graph}) => {
+export default ({graph, height}) => {
   const graphVisOptions = {
     layout: {
       hierarchical: true
@@ -19,7 +19,7 @@ export default ({graph}) => {
   }
 
   return (
-    <Graph style={{width:'100%', height:400}}
+    <Graph style={{width:'100%', height:height||400}}
            graph={graph}
            options={graphVisOptions} events={graphVisEvents}
     />

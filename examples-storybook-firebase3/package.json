@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "devDependencies": {
-    "react-scripts": "0.2.1",
-    "@kadira/storybook": "^2.35.3"
+    "@kadira/storybook": "^2.35.3",
+    "babel-preset-react-native": "^1.9.2"
   },
   "dependencies": {
     "@kadira/storybook": "^2.35.3",
@@ -18,7 +18,9 @@
     "radium": "^0.19.1",
     "react": "^15.3.0",
     "react-dom": "^15.2.1",
-    "react-graph-vis": "^0.1.1"
+    "react-graph-vis": "^0.1.1",
+    "react-native-gifted-chat": "^0.1.4",
+    "react-native-web": "0.0.94"
   },
   "scripts": {
     "start": "react-scripts start",
