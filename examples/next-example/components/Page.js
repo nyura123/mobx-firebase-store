@@ -65,6 +65,9 @@ class MessageList extends React.Component {
       }
     }
 
+    //prevent "server vs client markup is different" error: react-graph-viz will generate its own random identifier if we don't set it
+    const graphId = 'subscriptionGraph';
+
     return (
       <div>
         <h1>{title}</h1>
@@ -100,7 +103,10 @@ class MessageList extends React.Component {
 
           <h1>Firebase Subscription Graph</h1>
           <h2>Firebase subscriptions are updated automatically based on <b>getSubs</b> specified by the Component</h2>
-            <Graph style={{width:'100%', height:500}} key={store.subscriptionGraph.version} graph={store.subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+
+          <Graph identifier={graphId} style={{width:'100%', height:500}}
+                   graph={store.subscriptionGraph.get()} options={graphVisOptions} events={graphVisEvents} />
+
         </div>
 
       </div>

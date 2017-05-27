@@ -57,11 +57,14 @@ export default class GiftedChat extends Component {
     onSend: PropTypes.func.isRequired,
     messages: PropTypes.array,
     isLoadingEarlier: PropTypes.bool,
-    loadEarlier: PropTypes.func
+    loadEarlier: PropTypes.func,
+    loadEarlierLabel: PropTypes.string
   }
 
   render() {
-    const { messages, onSend, ownUid, height=200, style={}, isLoadingEarlier, loadEarlier } = this.props;
+    const { messages, onSend, ownUid, height=200, style={},
+      isLoadingEarlier, loadEarlier, loadEarlierLabel='Load earlier messages'
+    } = this.props;
 
     return (
       <View style={{height, backgroundColor:'steelblue', ...style}}>

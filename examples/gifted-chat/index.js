@@ -200,8 +200,10 @@ class LimitToExample extends Component {
           <h3>experimental - react-native-web + react-native-gifted-chat</h3>
           <GiftedChat
             messages={messages}
+            style={{height:300}}
             ownUid="frank"
             onSend={this.giftedChatSendMessages}
+            loadEarlierLabel={noMoreMessages ? 'No more messages' : 'Load earlier messages'}
             isLoadingEarlier={fetching}
             loadEarlier={this.getOlder}
           />

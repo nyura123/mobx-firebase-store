@@ -31,6 +31,10 @@ export function getFirebaseInfo(appName) {
   }
 }
 
+function isOnServer() {
+  return typeof window === 'undefined';
+}
+
 const allUsersStr = 'all_users'
 function limitedMsgsStr(limitTo) {
   return 'msgs_limitTo_'+limitTo
@@ -46,7 +50,7 @@ class Store {
     this.ref = ref
 
     //watch auth on the client and keep it in observable authUser
-    if (typeof window !== 'undefined') {
+    if (!isOnServer()) {
       this.auth = observable({
         authUser: decodedToken //initialize the client's auth state from server (or null/undefined if creating store on client)
       })
@@ -172,7 +176,8 @@ export function loadInitialData(appName, subs) {
 }
 
 export function initStore (appName, decodedToken, initialData) {
-  if (typeof window === 'undefined') {
+  if (isOnServer()) {
+    //server rendering or `next export`
     return new Store(appName, decodedToken, initialData)
   } else {
     //On client, reuse the same store
