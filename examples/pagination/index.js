@@ -180,7 +180,7 @@ class LimitToExample extends Component {
             </section>
           <br />
           <button onClick={() => this.getOlder()}>Get More Messages</button>
-          {noMoreMessages && <div>No More Messages</div>}
+          <div style={{visibility: noMoreMessages?'visible':'hidden'}}>No More Messages</div>
 
           <section style={{marginTop:20}}>
             Querying for {limitTo} latest items, {items.length} items found:

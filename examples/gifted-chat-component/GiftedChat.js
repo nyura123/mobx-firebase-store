@@ -55,17 +55,22 @@ export default class GiftedChat extends Component {
   static propTypes = {
     ownUid: PropTypes.any,
     onSend: PropTypes.func.isRequired,
-    messages: PropTypes.array
+    messages: PropTypes.array,
+    isLoadingEarlier: PropTypes.bool,
+    loadEarlier: PropTypes.func
   }
 
   render() {
-    const { messages, onSend, ownUid, height=200, style={} } = this.props;
+    const { messages, onSend, ownUid, height=200, style={}, isLoadingEarlier, loadEarlier } = this.props;
 
     return (
       <View style={{height, backgroundColor:'steelblue', ...style}}>
         <RNGiftedChatPatched
           messages={messages}
           onSend={onSend}
+          loadEarlier={!!loadEarlier}
+          onLoadEarlier={loadEarlier}
+          isLoadingEarlier={isLoadingEarlier}
           user={{
             _id: ownUid
           }}

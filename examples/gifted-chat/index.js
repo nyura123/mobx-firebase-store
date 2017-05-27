@@ -192,13 +192,19 @@ class LimitToExample extends Component {
             </section>
           <br />
           <button onClick={() => this.getOlder()}>Get More Messages</button>
-          {noMoreMessages && <div>No More Messages</div>}
+          <div style={{visibility: noMoreMessages?'visible':'hidden'}}>No More Messages</div>
 
         </div>
 
         <div>
           <h3>experimental - react-native-web + react-native-gifted-chat</h3>
-          <GiftedChat messages={messages} ownUid="frank" onSend={this.giftedChatSendMessages} />
+          <GiftedChat
+            messages={messages}
+            ownUid="frank"
+            onSend={this.giftedChatSendMessages}
+            isLoadingEarlier={fetching}
+            loadEarlier={this.getOlder}
+          />
         </div>
 
       </div>
