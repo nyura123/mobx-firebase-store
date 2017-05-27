@@ -4,6 +4,10 @@
 
 See live: [storybook](https://nyura123.github.io/mobx-firebase-store)
 
+#### Required libs
+
+`npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save`
+
 #### React Component Example
 
 ```js
@@ -138,11 +142,6 @@ See [chat](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/
 [react-native-gifted-chat example](https://github.com/nyura123/gifted-chat-firebase-mobx/tree/master)
 
 [firebase queries - pagination](https://github.com/nyura123/mobx-firebase-store/tree/master/examples/pagination)
-
-
-#### Required libs
-
-`npm install mobx mobx-react firebase firebase-nest mobx-firebase-store --save`
 
 
 # Run examples in storybook
